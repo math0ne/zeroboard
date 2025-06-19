@@ -58,17 +58,6 @@ const defaultBoards: Board[] = [
 - Lists and checkboxes
 - Markdown in titles: **bold** and *italic* text in board and column titles
 
-**Collapsible Sections**
-<details>
-<summary>Click to expand</summary>
-
-This content is hidden by default and can be expanded!
-
-- Nested lists work too
-- Perfect for organizing complex notes
-
-</details>
-
 **Task Lists**
 - [x] Drag and drop cards between columns
 - [x] Edit cards with markdown

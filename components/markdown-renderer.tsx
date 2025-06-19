@@ -667,7 +667,7 @@ export function MarkdownRenderer({
             },
             // Custom table renderers
             table: ({ children }) => (
-              <div className="overflow-x-auto" style={{ margin: "0 0 5px 0" }}>
+              <div className="overflow-x-auto" style={{ margin: "0 0 10px 0" }}>
                 <table className="min-w-full border-collapse border border-gray-300">{children}</table>
               </div>
             ),
