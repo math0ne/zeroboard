@@ -33,7 +33,7 @@ export function ImageUploadModal({ isOpen, onClose, onImageSelect }: ImageUpload
 
         <div className="space-y-4 py-2 pb-4">
           <div className="space-y-4">
-            <ImageUpload onImageUploaded={handleImageUploaded} maxSizeKB={500} />
+            <ImageUpload onImageUploaded={handleImageUploaded} maxSizeKB={5000} />
 
             <div className="mt-6">
               <h3 className="text-sm font-medium mb-2">Image Library</h3>

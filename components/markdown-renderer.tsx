@@ -742,7 +742,7 @@ export function MarkdownRenderer({
             a: ({ href, children }) => (
               <a
                 href={href}
-                className="text-blue-600 hover:text-blue-800 underline"
+                className="text-inherit hover:underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >

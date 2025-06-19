@@ -112,7 +112,7 @@ export function CardModal({ card, onClose, onUpdate, onCheckboxToggle, onImageCl
           </div>
 
           {/* Card Content */}
-          <div className="prose prose-lg max-w-none">
+          <div className="prose prose-lg max-w-none prose-a:text-inherit prose-a:no-underline hover:prose-a:underline">
             {isEditingContent ? (
               <Textarea
                 ref={textareaRef}

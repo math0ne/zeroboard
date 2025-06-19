@@ -599,7 +599,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
               />
             ) : (
               <div
-                className={`prose prose-sm max-w-none cursor-pointer p-1 rounded py-0 ${isEmptyContent ? "min-h-[60px] bg-gray-50/50 hover:bg-gray-100/50 flex items-center justify-center" : ""}`}
+                className={`prose prose-sm max-w-none cursor-pointer p-1 rounded py-0 prose-a:text-inherit prose-a:no-underline hover:prose-a:underline ${isEmptyContent ? "min-h-[60px] bg-gray-50/50 hover:bg-gray-100/50 flex items-center justify-center" : ""}`}
                 onClick={startEditingContent}
               >
                 {isEmptyContent ? (

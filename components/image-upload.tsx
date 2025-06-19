@@ -10,7 +10,7 @@ interface ImageUploadProps {
   maxSizeKB?: number
 }
 
-export function ImageUpload({ onImageUploaded, maxSizeKB = 500 }: ImageUploadProps) {
+export function ImageUpload({ onImageUploaded, maxSizeKB = 5000 }: ImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
