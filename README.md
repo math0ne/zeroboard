@@ -50,20 +50,13 @@ A powerful, lightweight Kanban board application designed for personal note-taki
 
 2. **Install dependencies**
    \`\`\`bash
-   npm install
-   # or
    yarn install
    \`\`\`
 
 3. **Start development server**
    \`\`\`bash
-   npm run dev
-   # or
    yarn dev
    \`\`\`
-
-4. **Open your browser**
-   Navigate to `http://localhost:3000`
 
 ### Building for Production
 
@@ -132,32 +125,6 @@ The built files will be in the `dist` directory, ready for deployment to any sta
 - **Image Library**: Access uploaded images through the image manager
 - **Local Storage**: Images are stored locally in your browser
 
-## 🌐 Deployment
-
-This app is built as a static site and can be deployed to any static hosting service:
-
-### Vercel (Recommended)
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Deploy automatically with zero configuration
-
-### Netlify
-1. Build the project: `npm run build`
-2. Drag and drop the `dist` folder to Netlify
-3. Your site is live!
-
-### GitHub Pages
-1. Build the project: `npm run build`
-2. Push the `dist` folder contents to your `gh-pages` branch
-3. Enable GitHub Pages in repository settings
-
-### Other Hosting Services
-The `dist` folder contains all static files and can be served by:
-- Apache/Nginx
-- AWS S3 + CloudFront
-- Google Cloud Storage
-- Any CDN or static hosting service
-
 ## 🛠 Technical Details
 
 ### Built With
@@ -175,12 +142,6 @@ The `dist` folder contains all static files and can be served by:
 - **Static Export**: Generates static HTML/CSS/JS files for deployment
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
 - **Component-Based**: Modular React components for maintainability
-
-### Browser Compatibility
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
 
 ### Storage Limits
 - **Local Storage**: ~5-10MB depending on browser
@@ -201,62 +162,276 @@ The modular architecture makes it easy to extend:
 - Extend markdown support in `markdown-renderer.tsx`
 - Add new board layouts in the main `page.tsx`
 
-## 🤝 Contributing
 
-We welcome contributions! Here's how to get started:
+---
 
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Make your changes**: Follow the existing code style
-4. **Test thoroughly**: Ensure all features work as expected
-5. **Commit your changes**: `git commit -m 'Add amazing feature'`
-6. **Push to the branch**: `git push origin feature/amazing-feature`
-7. **Open a Pull Request**: Describe your changes and their benefits
+## 📁 Project File Structure
 
-### Development Guidelines
-- Use TypeScript for all new code
-- Follow the existing component structure
-- Add comments for complex logic
-- Test on multiple browsers and screen sizes
-- Ensure accessibility standards are met
+This section provides a comprehensive map of all major files in the ZeroBoard project, their functions, and key methods.
 
-## 📄 License
+### Quick File Reference
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+**Core Application Files:**
+- `/app/page.tsx` - Main kanban board application component with state management and drag-and-drop
+- `/app/layout.tsx` - Root HTML layout and metadata configuration
+- `/app/globals.css` - Global CSS styles and Tailwind imports
+- `/components/note-card.tsx` - Individual card component with editing, collapsing, and multiple display modes
+- `/components/kanban-column.tsx` - Column component managing cards and drag-and-drop zones
+- `/components/markdown-renderer.tsx` - Markdown rendering with syntax highlighting and interactive features
+- `/components/title-markdown-renderer.tsx` - Markdown renderer for titles and headers with bold/italic support
+- `/components/image-manager.tsx` - Image management interface for IndexedDB stored images
+- `/components/image-modal.tsx` - Full-screen image viewer modal component
+- `/components/image-upload-modal.tsx` - Image upload interface with drag-and-drop support
+- `/components/image-upload.tsx` - Core image upload functionality with IndexedDB integration
+- `/components/theme-provider.tsx` - Theme context provider for application theming
+- `/lib/indexeddb-image-service.ts` - IndexedDB service for image storage, retrieval, and management
+- `/lib/image-utils.ts` - Image processing utilities, caching, and markdown image extraction
+- `/lib/utils.ts` - General utility functions including Tailwind CSS class merging
+- `/next.config.mjs` - Next.js configuration for static export and Electron compatibility
+- `/tailwind.config.ts` - Tailwind CSS configuration with custom theme and shadcn/ui setup
+- `/tsconfig.json` - TypeScript compiler configuration and path mappings
+- `/components.json` - Shadcn/ui component library configuration
+- `/package.json` - Project dependencies, scripts, and Electron build configuration
+- `/electron.js` - Electron main process for desktop application window management
 
-## 🙏 Acknowledgments
+### Core Application Files
 
-- **Next.js Team**: For the amazing React framework
-- **Tailwind CSS**: For the utility-first CSS framework
-- **Shadcn**: For the beautiful UI component library
-- **React Markdown**: For excellent markdown rendering
-- **Hello Pangea**: For the drag-and-drop functionality
+#### `/app/page.tsx` - Main Application Component
+**Purpose**: The heart of the application containing all board management, state handling, and drag-and-drop functionality.
 
-## 📞 Support
+**Key Functions:**
+- `KanbanBoard()` - Main React component managing the entire application state
+- `handleDragEnd(result)` - Handles card movement between columns and reordering within columns
+- `exportBoards()` - Exports all boards and images to JSON format with IndexedDB integration
+- `handleImportFile(event)` - Imports boards from JSON files, including image restoration to IndexedDB
+- `addBoard()` - Creates new kanban boards with default column structure
+- `addColumn()` - Adds new columns to the current board
+- `addCard(columnId, card)` - Creates new cards in specified columns
+- `updateCard(columnId, cardId, updates)` - Updates existing cards with new content or properties
+- `deleteCard(columnId, cardId)` - Removes cards from columns
+- `switchBoard(boardId)` - Changes the active board being displayed
+- `handleBoardTitleSave()` - Saves board title changes with markdown support
 
-If you encounter any issues or have questions:
+**State Management:**
+- `boards` - Array of all kanban boards
+- `currentBoardId` - ID of currently active board
+- `currentBoardTitle` - Title of current board (supports markdown)
+- Uses localStorage for persistence
 
-1. **Check the Issues**: Look for existing solutions in the GitHub issues
-2. **Create an Issue**: Report bugs or request features
-3. **Discussions**: Join community discussions for help and ideas
+#### `/app/layout.tsx` - Application Layout
+**Purpose**: Defines the root HTML structure and metadata for the application.
 
-## 🗺 Roadmap
+#### `/app/globals.css` - Global Styles
+**Purpose**: Contains global CSS styles, including Tailwind CSS imports and custom styling.
 
-### Upcoming Features
-- [ ] Dark mode support
-- [ ] Keyboard shortcuts
-- [ ] Card templates
-- [ ] Advanced search and filtering
-- [ ] Card due dates and reminders
-- [ ] Collaboration features
-- [ ] Mobile app (PWA)
-- [ ] Cloud sync options
+### Component Files
 
-### Version History
-- **v1.0.0**: Initial release with core Kanban functionality
-- **v1.1.0**: Added image support and multiple card types
-- **v1.2.0**: Enhanced markdown support and export/import
-- **v1.3.0**: Static site deployment and performance improvements
+#### `/components/note-card.tsx` - Individual Card Component
+**Purpose**: Renders individual kanban cards with editing capabilities, multiple display modes, and interactive features.
+
+**Key Functions:**
+- `NoteCard(props)` - Main card component with editing, collapsing, and various display modes
+- `toggleCollapse()` - Minimizes/expands cards to show only titles
+- `togglePlain()` - Removes/adds borders and shadows for minimal look
+- `toggleLightBackground()` - Highlights cards with subtle background color
+- `handleCheckboxToggle(index)` - Toggles markdown checkboxes within card content
+- `handleDeleteClick()` - Implements two-click delete confirmation for cards
+- `startEditingContent(e)` - Switches card to edit mode for content modification
+- `handleImageSelected(imageId, filename)` - Adds selected images to card content
+- `AsyncImageOnlyCard` - Specialized component for image-only cards with IndexedDB loading
+- `AsyncCollapsedImageCard` - Handles collapsed image cards with async image loading
+
+**Card Types Supported:**
+- Standard cards with title and markdown content
+- Image-only cards displaying just images
+- Table-only cards optimized for data display
+- Collapsed cards showing only titles
+- Light background cards for highlighting
+
+#### `/components/kanban-column.tsx` - Column Component
+**Purpose**: Manages individual kanban columns including cards, drag-and-drop zones, and column operations.
+
+**Key Functions:**
+- `KanbanColumn(props)` - Main column component with card management
+- `handleAddCard()` - Creates new blank cards in edit mode
+- `handleTitleSave()` - Saves column title changes
+- `handleDeleteClick()` - Two-click confirmation for column deletion
+- Integrates with drag-and-drop using `@hello-pangea/dnd`
+
+#### `/components/markdown-renderer.tsx` - Markdown Display Component
+**Purpose**: Renders markdown content with syntax highlighting, interactive features, and multiple display modes.
+
+**Key Functions:**
+- `MarkdownRenderer(props)` - Main markdown rendering component with customizable modes
+- `CodeBlock({language, children})` - Custom syntax highlighter for code blocks with tokenization
+- `ImageOnlyRenderer({content, collapsedImageHeight, onImageClick})` - Specialized renderer for image-only cards
+- `ImageWithExpand({src, alt, onImageClick})` - Image component with expand button and async loading
+- `tokenizeCode()` - Syntax highlighting tokenizer supporting multiple programming languages
+
+**Features:**
+- GitHub Flavored Markdown support via `remark-gfm`
+- Interactive checkboxes that trigger callbacks
+- Custom syntax highlighting for code blocks
+- Image expansion with modal support
+- Table rendering with proper styling
+- Support for collapsed image cards
+
+#### `/components/title-markdown-renderer.tsx` - Title Markdown Renderer
+**Purpose**: Renders markdown in titles and column headers with bold/italic support.
+
+#### `/components/image-manager.tsx` - Image Management Interface
+**Purpose**: Provides interface for managing stored images in IndexedDB.
+
+**Key Functions:**
+- `ImageManager({onImageSelect, showSelector})` - Main image management component
+- `loadImages()` - Retrieves all images from IndexedDB and creates display URLs
+- `deleteImage(imageId)` - Removes images from IndexedDB storage
+- `copyImageMarkdown(image)` - Copies markdown syntax for images to clipboard
+- `downloadImage(image)` - Downloads images from IndexedDB to local filesystem
+- `formatFileSize(bytes)` - Converts bytes to human-readable file sizes
+
+#### `/components/image-modal.tsx` - Full-Screen Image Viewer
+**Purpose**: Displays images in full-screen modal overlay.
+
+#### `/components/image-upload-modal.tsx` - Image Upload Interface
+**Purpose**: Handles image upload with drag-and-drop and file selection.
+
+#### `/components/image-upload.tsx` - Image Upload Component
+**Purpose**: Core image upload functionality with IndexedDB storage.
+
+#### `/components/theme-provider.tsx` - Theme Management
+**Purpose**: Provides theme context for the application (currently supports light mode).
+
+### Library Files
+
+#### `/lib/indexeddb-image-service.ts` - Image Storage Service
+**Purpose**: Handles all IndexedDB operations for image storage and retrieval.
+
+**Key Functions:**
+- `IndexedDBImageService` - Main service class for image operations
+- `init()` - Initializes IndexedDB database and object stores
+- `storeImage(id, filename, blob, type)` - Stores image blobs in IndexedDB
+- `getImage(id)` - Retrieves image data by ID
+- `getAllImages()` - Gets all stored images sorted by upload date
+- `deleteImage(id)` - Removes images from storage
+- `getImageAsDataURL(id)` - Converts stored blobs to data URLs for display
+- `getStorageUsage()` - Returns current storage usage statistics
+
+**Database Schema:**
+- Database: `zeroboard-images`
+- Store: `images` with indexes on `uploadedAt` and `filename`
+- Stores complete image metadata including size, type, and timestamps
+
+#### `/lib/image-utils.ts` - Image Utility Functions
+**Purpose**: Utility functions for image handling, caching, and markdown processing.
+
+**Key Functions:**
+- `getImageUrlFromMarkdown(markdown)` - Extracts image URLs and alt text from markdown
+- `resolveImageUrl(src)` - Resolves local image references to data URLs
+- `getCachedImageUrl(src)` - Retrieves resolved URLs from cache
+- `clearImageCache()` - Clears all image caches and increments cache version
+- `isImageOnlyContent(content)` - Checks if markdown contains only an image
+- `isTableOnlyContent(content)` - Checks if markdown contains only a table
+- `startsWithImage(content)` - Checks if markdown starts with an image
+- `createImageErrorElement(message)` - Creates error elements for failed image loads
+
+**Caching System:**
+- `imageUrlCache` - Maps image IDs to data URLs
+- `resolvedUrlCache` - Maps source URLs to resolved URLs
+- `cacheVersion` - Tracks cache invalidation for component re-renders
+
+#### `/lib/utils.ts` - General Utilities
+**Purpose**: Contains utility functions including class name merging for Tailwind CSS.
+
+### Configuration Files
+
+#### `/next.config.mjs` - Next.js Configuration
+**Purpose**: Configures Next.js for static export and Electron compatibility.
+
+**Key Settings:**
+- `output: 'export'` - Enables static site generation
+- `assetPrefix: '.'` - Uses relative paths for Electron compatibility
+- `distDir: 'dist'` - Sets build output directory
+- `images.unoptimized: true` - Disables image optimization for static export
+
+#### `/tailwind.config.ts` - Tailwind CSS Configuration
+**Purpose**: Configures Tailwind CSS with custom colors and shadcn/ui integration.
+
+#### `/tsconfig.json` - TypeScript Configuration
+**Purpose**: TypeScript compiler options and path mappings.
+
+#### `/components.json` - Shadcn/UI Configuration
+**Purpose**: Configuration for shadcn/ui component library integration.
+
+#### `/package.json` - Project Dependencies
+**Purpose**: Defines project dependencies, scripts, and Electron build configuration.
+
+**Key Scripts:**
+- `dev` - Starts Next.js development server
+- `build` - Builds static export for production
+- `electron` - Runs Electron app
+- `electron-dev` - Concurrent development mode
+- `electron-build` - Builds Electron distributables
+
+#### `/electron.js` - Electron Main Process
+**Purpose**: Electron application entry point and window management.
+
+**Key Functions:**
+- `createWindow()` - Creates main application window with security settings
+- `createMenu()` - Sets up application menu with keyboard shortcuts
+- Handles file protocol loading for static assets
+- Implements security measures preventing external navigation
+
+### Data Models
+
+#### Core Interfaces (defined in `/app/page.tsx`)
+
+```typescript
+interface Card {
+  id: string
+  title: string
+  content: string
+  color: string
+  tags: string[]
+  createdAt: string
+  updatedAt: string
+  collapsed?: boolean
+  plain?: boolean
+  lightBackground?: boolean
+}
+
+interface Column {
+  id: string
+  title: string
+  color: string
+  cards: Card[]
+}
+
+interface Board {
+  id: string
+  title: string
+  columns: Column[]
+}
+```
+
+### Storage Architecture
+
+1. **localStorage**: Stores board data, current board selection
+2. **IndexedDB**: Stores image blobs with metadata via `IndexedDBImageService`
+3. **Memory Caches**: Image URL caching for performance optimization
+4. **Export Format**: JSON with embedded base64 images for portability
+
+### Key Dependencies
+
+- **Next.js 15**: React framework with static export
+- **@hello-pangea/dnd**: Drag and drop functionality
+- **react-markdown**: Markdown rendering with GitHub flavored markdown
+- **Tailwind CSS**: Utility-first CSS framework
+- **shadcn/ui**: UI component library
+- **Lucide React**: Icon library
+- **Electron**: Desktop application wrapper
+
+This architecture provides a robust, offline-first note-taking application with rich multimedia support and cross-platform compatibility.
 
 ---
 
