@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { KanbanColumn } from "@/components/kanban-column"
 import { TitleMarkdownRenderer } from "@/components/title-markdown-renderer"
 import { imageService } from "@/lib/indexeddb-image-service"
+import { clearImageCache } from "@/lib/image-utils"
 
 // Update the Card interface to include the new lightBackground property
 export interface Card {
@@ -1612,6 +1613,11 @@ export default function KanbanBoard() {
                       // Continue with other images even if one fails
                     }
                   }
+                }
+
+                // Clear image cache after importing so components will re-load images
+                if (importedImageCount > 0) {
+                  clearImageCache()
                 }
               } catch (error) {
                 console.error("Error importing images:", error)

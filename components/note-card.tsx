@@ -24,6 +24,7 @@ import {
   isTableOnlyContent,
   startsWithImage,
   createImageErrorElement,
+  getCacheVersion,
 } from "@/lib/image-utils"
 
 /**
@@ -596,6 +597,7 @@ function AsyncImageOnlyCard({
 }) {
   const [imageData, setImageData] = useState<{ url: string; alt: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const cacheVersion = getCacheVersion()
 
   useEffect(() => {
     const loadImage = async () => {
@@ -610,7 +612,7 @@ function AsyncImageOnlyCard({
     }
 
     loadImage()
-  }, [card.content])
+  }, [card.content, cacheVersion])
 
   const openImageModal = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -720,6 +722,7 @@ function AsyncCollapsedImageCard({
 }) {
   const [imageData, setImageData] = useState<{ url: string; alt: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const cacheVersion = getCacheVersion()
 
   useEffect(() => {
     const loadImage = async () => {
@@ -734,7 +737,7 @@ function AsyncCollapsedImageCard({
     }
 
     loadImage()
-  }, [card.content])
+  }, [card.content, cacheVersion])
 
   if (isLoading) {
     return (

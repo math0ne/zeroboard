@@ -10,12 +10,12 @@
 
 import type React from "react"
 
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect, useRef } from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { Button } from "@/components/ui/button"
 import { Maximize2 } from "lucide-react"
-import { getImageUrlFromMarkdown, resolveImageUrl, createImageErrorElement } from "@/lib/image-utils"
+import { getImageUrlFromMarkdown, resolveImageUrl, getCachedImageUrl, getCacheVersion, createImageErrorElement } from "@/lib/image-utils"
 
 /**
  * Props for the MarkdownRenderer component
@@ -199,6 +199,7 @@ function ImageOnlyRenderer({
 }) {
   const [imageData, setImageData] = useState<{ url: string; alt: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const cacheVersion = getCacheVersion()
 
   useEffect(() => {
     const loadImage = async () => {
@@ -213,7 +214,7 @@ function ImageOnlyRenderer({
     }
 
     loadImage()
-  }, [content])
+  }, [content, cacheVersion])
 
   // Loading state
   if (isLoading) {
@@ -285,10 +286,14 @@ function ImageWithExpand({
   onImageClick,
 }: { src?: string; alt?: string; onImageClick?: (imageUrl: string) => void }) {
   const [isHovering, setIsHovering] = useState(false)
-  const [resolvedSrc, setResolvedSrc] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [resolvedSrc, setResolvedSrc] = useState<string | null>(() => {
+    // Initialize with cached value if available
+    return src ? getCachedImageUrl(src) : null
+  })
+  const [isLoading, setIsLoading] = useState(false)
+  const isResolvingRef = useRef(false)
 
-  // Resolve the image URL asynchronously
+  // Resolve the image URL asynchronously, with persistent caching to prevent re-loads
   useEffect(() => {
     const resolveImage = async () => {
       if (!src) {
@@ -297,18 +302,30 @@ function ImageWithExpand({
         return
       }
 
-      if (src.startsWith("local:")) {
-        try {
-          const resolved = await resolveImageUrl(src)
-          setResolvedSrc(resolved || null)
-        } catch (error) {
-          console.error("Error resolving image:", error)
-          setResolvedSrc(null)
-        }
-      } else {
-        setResolvedSrc(src)
+      // Check persistent cache first
+      const cached = getCachedImageUrl(src)
+      if (cached) {
+        setResolvedSrc(cached)
+        setIsLoading(false)
+        return
       }
+
+      // Only resolve if not already resolving and not cached
+      if (isResolvingRef.current) return
+      
+      isResolvingRef.current = true
+      setIsLoading(true)
+      
+      try {
+        const resolved = await resolveImageUrl(src)
+        setResolvedSrc(resolved || null)
+      } catch (error) {
+        console.error("Error resolving image:", error)
+        setResolvedSrc(null)
+      }
+      
       setIsLoading(false)
+      isResolvingRef.current = false
     }
 
     resolveImage()
@@ -322,7 +339,7 @@ function ImageWithExpand({
     }
   }
 
-  // Loading state
+  // Loading state (should be rare now due to caching)
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4 border border-dashed border-gray-300 rounded bg-gray-50 text-gray-400 text-xs">
@@ -331,7 +348,7 @@ function ImageWithExpand({
     )
   }
 
-  // If no resolved src, show error
+  // If no resolved src, show error (only if not loading and not cached)
   if (!resolvedSrc) {
     return (
       <div className="flex items-center justify-center p-4 border border-dashed border-gray-300 rounded bg-gray-50 text-gray-400 text-xs">

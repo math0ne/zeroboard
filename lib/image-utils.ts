@@ -8,6 +8,12 @@ import { imageService } from './indexeddb-image-service'
 // Cache for resolved image URLs to avoid repeated IndexedDB calls
 const imageUrlCache = new Map<string, string>()
 
+// Cache for fully resolved URLs (including external URLs) to prevent component re-render issues
+const resolvedUrlCache = new Map<string, string>()
+
+// Cache version to trigger re-loading when cache is cleared
+let cacheVersion = 0
+
 /**
  * Extract image URL and alt text from markdown content
  * @param {string} markdown - Markdown content containing an image
@@ -58,19 +64,27 @@ export async function getImageUrlFromMarkdown(markdown: string): Promise<{ url: 
 export async function resolveImageUrl(src: string): Promise<string> {
   if (!src) return ""
 
+  // Check the resolved URL cache first (for all URLs)
+  if (resolvedUrlCache.has(src)) {
+    return resolvedUrlCache.get(src)!
+  }
+
   if (src.startsWith("local:")) {
     try {
       const imageId = src.replace("local:", "")
       
-      // Check cache first
+      // Check IndexedDB cache
       if (imageUrlCache.has(imageId)) {
-        return imageUrlCache.get(imageId)!
+        const dataUrl = imageUrlCache.get(imageId)!
+        resolvedUrlCache.set(src, dataUrl)
+        return dataUrl
       }
 
       // Fetch from IndexedDB
       const dataUrl = await imageService.getImageAsDataURL(imageId)
       if (dataUrl) {
         imageUrlCache.set(imageId, dataUrl)
+        resolvedUrlCache.set(src, dataUrl)
         return dataUrl
       }
     } catch (error) {
@@ -79,7 +93,50 @@ export async function resolveImageUrl(src: string): Promise<string> {
     return ""
   }
 
+  // For external URLs, cache them as-is
+  resolvedUrlCache.set(src, src)
   return src
+}
+
+/**
+ * Synchronously get a resolved image URL from cache
+ * @param {string} src - Image source URL
+ * @returns {string | null} Cached URL or null if not cached
+ */
+export function getCachedImageUrl(src: string): string | null {
+  return resolvedUrlCache.get(src) || null
+}
+
+/**
+ * Clear all image caches to force re-loading of images
+ * Useful after importing new images
+ */
+export function clearImageCache(): void {
+  imageUrlCache.clear()
+  resolvedUrlCache.clear()
+  cacheVersion++ // Increment version to trigger re-loading in components
+}
+
+/**
+ * Get current cache version to detect when cache has been cleared
+ * @returns {number} Current cache version
+ */
+export function getCacheVersion(): number {
+  return cacheVersion
+}
+
+/**
+ * Clear cache for specific image URLs
+ * @param {string[]} urls - Array of URLs to clear from cache
+ */
+export function clearSpecificImageCache(urls: string[]): void {
+  urls.forEach(url => {
+    resolvedUrlCache.delete(url)
+    if (url.startsWith("local:")) {
+      const imageId = url.replace("local:", "")
+      imageUrlCache.delete(imageId)
+    }
+  })
 }
 
 /**
