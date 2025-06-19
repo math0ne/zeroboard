@@ -2,9 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: 'zeroboard',
+  description: 'A powerful, lightweight Kanban board application for personal note-taking and project management',
 }
 
 export default function RootLayout({

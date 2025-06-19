@@ -371,78 +371,27 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     </div>
   )
 
-  /**
-   * Render image with error handling
-   * @param {string} url - Image URL
-   * @param {string} alt - Alt text
-   * @param {React.CSSProperties} [style] - Additional styles
-   * @returns {JSX.Element} Image element
-   */
-  const renderImage = (url: string, alt: string, style?: React.CSSProperties) => {
-
-    if (!url) {
-      return (
-        <div className="flex items-center justify-center p-4 bg-gray-50 text-gray-400 text-xs h-full">
-          Image not available test4
-        </div>
-      )
-    }
-
-    return (
-      <img
-        src={url || "/placeholder.svg"}
-        alt={alt}
-        className="w-full object-cover"
-        style={style}
-        onError={(e) => {
-          console.error(`Failed to load image: ${url}`)
-          e.currentTarget.style.display = "none"
-          const errorDiv = createImageErrorElement()
-          e.currentTarget.parentElement?.appendChild(errorDiv)
-        }}
-      />
-    )
-  }
 
   // For image-only cards - completely different rendering
   if (isImageOnlyCard && !isEditingTitle && !isEditingContent) {
-    const { url, alt } = getImageUrlFromMarkdown(card.content)
-
-
     return (
-      <>
-        <div
-          className={`${isPlain ? "" : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`} overflow-hidden relative cursor-pointer`}
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={handleMouseLeave}
-          onClick={startEditingContent}
-        >
-          {isHovering && (
-            <>
-              {renderControlButtons()}
-              {url && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={openImageModal}
-                  className="absolute bottom-2 right-2 z-10 h-6 w-6 p-0 bg-white/80 hover:bg-white/90 rounded-full"
-                >
-                  <Maximize2 className="h-3 w-3" />
-                </Button>
-              )}
-            </>
-          )}
-          {renderImage(url, alt, { height: "auto" })}
-        </div>
-        {isImageModalOpen && <ImageModal imageUrl={imageUrl} onClose={() => setIsImageModalOpen(false)} />}
-        {isImageUploadOpen && (
-          <ImageUploadModal
-            isOpen={isImageUploadOpen}
-            onClose={() => setIsImageUploadOpen(false)}
-            onImageSelect={handleImageSelected}
-          />
-        )}
-      </>
+      <AsyncImageOnlyCard 
+        card={card}
+        isHovering={isHovering}
+        isImageModalOpen={isImageModalOpen}
+        isImageUploadOpen={isImageUploadOpen}
+        imageUrl={imageUrl}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={handleMouseLeave}
+        onClick={startEditingContent}
+        onImageClick={handleImageClick}
+        onImageModalClose={() => setIsImageModalOpen(false)}
+        onImageUploadClose={() => setIsImageUploadOpen(false)}
+        onImageSelect={handleImageSelected}
+        renderControlButtons={renderControlButtons}
+        isPlain={isPlain}
+        isLightBackground={isLightBackground}
+      />
     )
   }
 
@@ -463,28 +412,24 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
 
   // For collapsed cards that start with an image - special rendering
   if (isCollapsed && cardStartsWithImage && !isEditingTitle && !isEditingContent) {
-    const { url, alt } = getImageUrlFromMarkdown(card.content)
-
     return (
-      <>
-        <div
-          className={`${isPlain ? "" : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`} overflow-hidden relative cursor-pointer`}
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={handleMouseLeave}
-          onClick={startEditingContent}
-        >
-          {isHovering && renderControlButtons()}
-          {renderImage(url, alt, { height: "45px", objectPosition: "center top" })}
-        </div>
-        {isImageModalOpen && <ImageModal imageUrl={imageUrl} onClose={() => setIsImageModalOpen(false)} />}
-        {isImageUploadOpen && (
-          <ImageUploadModal
-            isOpen={isImageUploadOpen}
-            onClose={() => setIsImageUploadOpen(false)}
-            onImageSelect={handleImageSelected}
-          />
-        )}
-      </>
+      <AsyncCollapsedImageCard 
+        card={card}
+        isHovering={isHovering}
+        isImageModalOpen={isImageModalOpen}
+        isImageUploadOpen={isImageUploadOpen}
+        imageUrl={imageUrl}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={handleMouseLeave}
+        onClick={startEditingContent}
+        onImageClick={handleImageClick}
+        onImageModalClose={() => setIsImageModalOpen(false)}
+        onImageUploadClose={() => setIsImageUploadOpen(false)}
+        onImageSelect={handleImageSelected}
+        renderControlButtons={renderControlButtons}
+        isPlain={isPlain}
+        isLightBackground={isLightBackground}
+      />
     )
   }
 
@@ -607,6 +552,238 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
           isOpen={isImageUploadOpen}
           onClose={() => setIsImageUploadOpen(false)}
           onImageSelect={handleImageSelected}
+        />
+      )}
+    </>
+  )
+}
+
+/**
+ * Async component for image-only cards that handles IndexedDB image loading
+ */
+function AsyncImageOnlyCard({ 
+  card, 
+  isHovering, 
+  isImageModalOpen, 
+  isImageUploadOpen, 
+  imageUrl, 
+  onMouseEnter, 
+  onMouseLeave, 
+  onClick, 
+  onImageClick, 
+  onImageModalClose, 
+  onImageUploadClose, 
+  onImageSelect, 
+  renderControlButtons, 
+  isPlain, 
+  isLightBackground 
+}: {
+  card: CardType
+  isHovering: boolean
+  isImageModalOpen: boolean
+  isImageUploadOpen: boolean
+  imageUrl: string
+  onMouseEnter: () => void
+  onMouseLeave: () => void
+  onClick: () => void
+  onImageClick: (url: string) => void
+  onImageModalClose: () => void
+  onImageUploadClose: () => void
+  onImageSelect: (imageId: string, filename: string) => void
+  renderControlButtons: () => React.ReactNode
+  isPlain: boolean
+  isLightBackground: boolean
+}) {
+  const [imageData, setImageData] = useState<{ url: string; alt: string } | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadImage = async () => {
+      try {
+        const { url, alt } = await getImageUrlFromMarkdown(card.content)
+        setImageData({ url, alt })
+      } catch (error) {
+        console.error("Error loading image:", error)
+        setImageData(null)
+      }
+      setIsLoading(false)
+    }
+
+    loadImage()
+  }, [card.content])
+
+  const openImageModal = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (imageData?.url) {
+      onImageClick(imageData.url)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className={`${isPlain ? "" : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`} overflow-hidden relative cursor-pointer h-32 flex items-center justify-center`}>
+        <span className="text-gray-400 text-xs">Loading image...</span>
+      </div>
+    )
+  }
+
+  if (!imageData || !imageData.url) {
+    return (
+      <div className={`${isPlain ? "" : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`} overflow-hidden relative cursor-pointer h-32 flex items-center justify-center`}>
+        <span className="text-gray-400 text-xs">Image not available</span>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div
+        className={`${isPlain ? "" : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`} overflow-hidden relative cursor-pointer`}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onClick={onClick}
+      >
+        {isHovering && (
+          <>
+            {renderControlButtons()}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={openImageModal}
+              className="absolute bottom-2 right-2 z-10 h-6 w-6 p-0 bg-white/80 hover:bg-white/90 rounded-full"
+            >
+              <Maximize2 className="h-3 w-3" />
+            </Button>
+          </>
+        )}
+        <img
+          src={imageData.url}
+          alt={imageData.alt}
+          className="w-full object-cover"
+          style={{ height: "auto" }}
+          onError={(e) => {
+            console.error(`Failed to load image: ${imageData.url}`)
+            e.currentTarget.style.display = "none"
+            const errorDiv = createImageErrorElement()
+            e.currentTarget.parentElement?.appendChild(errorDiv)
+          }}
+        />
+      </div>
+      {isImageModalOpen && <ImageModal imageUrl={imageUrl} onClose={onImageModalClose} />}
+      {isImageUploadOpen && (
+        <ImageUploadModal
+          isOpen={isImageUploadOpen}
+          onClose={onImageUploadClose}
+          onImageSelect={onImageSelect}
+        />
+      )}
+    </>
+  )
+}
+
+/**
+ * Async component for collapsed image cards that handles IndexedDB image loading
+ */
+function AsyncCollapsedImageCard({ 
+  card, 
+  isHovering, 
+  isImageModalOpen, 
+  isImageUploadOpen, 
+  imageUrl, 
+  onMouseEnter, 
+  onMouseLeave, 
+  onClick, 
+  onImageClick, 
+  onImageModalClose, 
+  onImageUploadClose, 
+  onImageSelect, 
+  renderControlButtons, 
+  isPlain, 
+  isLightBackground 
+}: {
+  card: CardType
+  isHovering: boolean
+  isImageModalOpen: boolean
+  isImageUploadOpen: boolean
+  imageUrl: string
+  onMouseEnter: () => void
+  onMouseLeave: () => void
+  onClick: () => void
+  onImageClick: (url: string) => void
+  onImageModalClose: () => void
+  onImageUploadClose: () => void
+  onImageSelect: (imageId: string, filename: string) => void
+  renderControlButtons: () => React.ReactNode
+  isPlain: boolean
+  isLightBackground: boolean
+}) {
+  const [imageData, setImageData] = useState<{ url: string; alt: string } | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadImage = async () => {
+      try {
+        const { url, alt } = await getImageUrlFromMarkdown(card.content)
+        setImageData({ url, alt })
+      } catch (error) {
+        console.error("Error loading image:", error)
+        setImageData(null)
+      }
+      setIsLoading(false)
+    }
+
+    loadImage()
+  }, [card.content])
+
+  if (isLoading) {
+    return (
+      <div className={`${isPlain ? "" : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`} overflow-hidden relative cursor-pointer`} style={{ height: "45px" }}>
+        <div className="flex items-center justify-center h-full">
+          <span className="text-gray-400 text-xs">Loading...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (!imageData || !imageData.url) {
+    return (
+      <div className={`${isPlain ? "" : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`} overflow-hidden relative cursor-pointer`} style={{ height: "45px" }}>
+        <div className="flex items-center justify-center h-full">
+          <span className="text-gray-400 text-xs">Image not available</span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div
+        className={`${isPlain ? "" : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`} overflow-hidden relative cursor-pointer`}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onClick={onClick}
+      >
+        {isHovering && renderControlButtons()}
+        <img
+          src={imageData.url}
+          alt={imageData.alt}
+          className="w-full object-cover"
+          style={{ height: "45px", objectPosition: "center top" }}
+          onError={(e) => {
+            console.error(`Failed to load image: ${imageData.url}`)
+            e.currentTarget.style.display = "none"
+            const errorDiv = createImageErrorElement()
+            e.currentTarget.parentElement?.appendChild(errorDiv)
+          }}
+        />
+      </div>
+      {isImageModalOpen && <ImageModal imageUrl={imageUrl} onClose={onImageModalClose} />}
+      {isImageUploadOpen && (
+        <ImageUploadModal
+          isOpen={isImageUploadOpen}
+          onClose={onImageUploadClose}
+          onImageSelect={onImageSelect}
         />
       )}
     </>

@@ -2,15 +2,7 @@
 import { useState, useEffect } from "react"
 import { Trash2, Copy, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
-
-interface StoredImage {
-  id: string
-  filename: string
-  base64: string
-  size: number
-  type: string
-  uploadedAt: string
-}
+import { imageService, type StoredImage } from "@/lib/indexeddb-image-service"
 
 interface ImageManagerProps {
   onImageSelect?: (imageId: string, filename: string) => void
@@ -20,45 +12,49 @@ interface ImageManagerProps {
 export function ImageManager({ onImageSelect, showSelector = false }: ImageManagerProps) {
   const [images, setImages] = useState<StoredImage[]>([])
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [imageUrls, setImageUrls] = useState<Record<string, string>>({})
 
   useEffect(() => {
     loadImages()
   }, [])
 
-  const loadImages = () => {
+  const loadImages = async () => {
     try {
-      const storedImagesStr = localStorage.getItem("kanban-images")
-      if (!storedImagesStr) {
-        console.log("No images found in localStorage")
-        setImages([])
-        return
+      const storedImages = await imageService.getAllImages()
+      console.log(`Loaded ${storedImages.length} images from IndexedDB`)
+      setImages(storedImages)
+
+      // Create object URLs for display
+      const urls: Record<string, string> = {}
+      for (const image of storedImages) {
+        urls[image.id] = URL.createObjectURL(image.blob)
       }
-
-      const storedImages = JSON.parse(storedImagesStr)
-      const imageArray = Object.values(storedImages) as StoredImage[]
-
-      console.log(`Loaded ${imageArray.length} images from localStorage`)
-
-      setImages(imageArray.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()))
+      setImageUrls(urls)
     } catch (error) {
       console.error("Error loading images:", error)
       setImages([])
     }
   }
 
-  const deleteImage = (imageId: string) => {
+  // Cleanup object URLs when component unmounts or images change
+  useEffect(() => {
+    return () => {
+      Object.values(imageUrls).forEach(url => {
+        URL.revokeObjectURL(url)
+      })
+    }
+  }, [imageUrls])
+
+  const deleteImage = async (imageId: string) => {
     try {
-      const storedImagesStr = localStorage.getItem("kanban-images")
-      if (!storedImagesStr) {
-        console.error("No images found in localStorage when trying to delete")
-        return
-      }
-
-      const storedImages = JSON.parse(storedImagesStr)
-      delete storedImages[imageId]
-      localStorage.setItem("kanban-images", JSON.stringify(storedImages))
-
+      await imageService.deleteImage(imageId)
       console.log(`Deleted image: ${imageId}`)
+      
+      // Revoke the object URL for the deleted image
+      if (imageUrls[imageId]) {
+        URL.revokeObjectURL(imageUrls[imageId])
+      }
+      
       loadImages()
     } catch (error) {
       console.error("Error deleting image:", error)
@@ -73,7 +69,7 @@ export function ImageManager({ onImageSelect, showSelector = false }: ImageManag
 
   const downloadImage = (image: StoredImage) => {
     const link = document.createElement("a")
-    link.href = image.base64
+    link.href = imageUrls[image.id] || URL.createObjectURL(image.blob)
     link.download = image.filename
     document.body.appendChild(link)
     link.click()
@@ -118,7 +114,7 @@ export function ImageManager({ onImageSelect, showSelector = false }: ImageManag
           >
             <div className="aspect-square relative">
               <img
-                src={image.base64 || "/placeholder.svg"}
+                src={imageUrls[image.id] || "/placeholder.svg"}
                 alt={image.filename}
                 className="w-full h-full object-cover"
                 onError={(e) => {

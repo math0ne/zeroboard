@@ -10,7 +10,7 @@
 
 import type React from "react"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { Button } from "@/components/ui/button"
@@ -181,9 +181,100 @@ function CodeBlock({ language, children }: { language: string; children: string 
 }
 
 /**
- * Component for displaying an image with an expand button
+ * Component for rendering image-only cards that handles async image loading
  * @param {Object} props - Component props
- * @param {string} [props.src] - Image source URL
+ * @param {string} props.content - Markdown content containing image
+ * @param {number} [props.collapsedImageHeight] - Height for collapsed view
+ * @param {function} [props.onImageClick] - Callback when image is clicked
+ * @returns {JSX.Element} Image only renderer
+ */
+function ImageOnlyRenderer({
+  content,
+  collapsedImageHeight,
+  onImageClick,
+}: {
+  content: string
+  collapsedImageHeight?: number
+  onImageClick?: (imageUrl: string) => void
+}) {
+  const [imageData, setImageData] = useState<{ url: string; alt: string } | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadImage = async () => {
+      try {
+        const { url, alt } = await getImageUrlFromMarkdown(content)
+        setImageData({ url, alt })
+      } catch (error) {
+        console.error("Error loading image:", error)
+        setImageData(null)
+      }
+      setIsLoading(false)
+    }
+
+    loadImage()
+  }, [content])
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-4 bg-gray-50 text-gray-400 text-xs h-full">
+        Loading image...
+      </div>
+    )
+  }
+
+  // No image found
+  if (!imageData || !imageData.url) {
+    return (
+      <div className="flex items-center justify-center p-4 bg-gray-50 text-gray-400 text-xs h-full">
+        Image not available
+      </div>
+    )
+  }
+
+  const imageStyle: React.CSSProperties = {
+    margin: 0,
+    padding: 0,
+    border: "none",
+    display: "block",
+    borderRadius: 0,
+    width: "100%",
+    objectFit: "cover",
+  }
+
+  // If collapsedImageHeight is provided, set height and crop the image
+  if (collapsedImageHeight) {
+    imageStyle.height = `${collapsedImageHeight}px`
+    imageStyle.objectPosition = "center top"
+  } else {
+    imageStyle.height = "100%"
+  }
+
+  return (
+    <img
+      src={imageData.url}
+      alt={imageData.alt}
+      className="w-full object-cover"
+      style={imageStyle}
+      onClick={() => onImageClick?.(imageData.url)}
+      onError={(e) => {
+        console.error(`Failed to load image: ${imageData.url}`)
+        const parent = e.currentTarget.parentElement
+        if (parent) {
+          e.currentTarget.style.display = "none"
+          const errorDiv = createImageErrorElement()
+          parent.appendChild(errorDiv)
+        }
+      }}
+    />
+  )
+}
+
+/**
+ * Component for displaying an image with an expand button that handles async image loading
+ * @param {Object} props - Component props
+ * @param {string} [props.src] - Image source URL (may be local: prefixed)
  * @param {string} [props.alt] - Image alt text
  * @param {function} [props.onImageClick] - Callback when image is clicked
  * @returns {JSX.Element} Image with expand button
@@ -193,24 +284,58 @@ function ImageWithExpand({
   alt,
   onImageClick,
 }: { src?: string; alt?: string; onImageClick?: (imageUrl: string) => void }) {
-
-  console.log("src: ", src)
-
   const [isHovering, setIsHovering] = useState(false)
+  const [resolvedSrc, setResolvedSrc] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Resolve the image URL asynchronously
+  useEffect(() => {
+    const resolveImage = async () => {
+      if (!src) {
+        setResolvedSrc(null)
+        setIsLoading(false)
+        return
+      }
+
+      if (src.startsWith("local:")) {
+        try {
+          const resolved = await resolveImageUrl(src)
+          setResolvedSrc(resolved || null)
+        } catch (error) {
+          console.error("Error resolving image:", error)
+          setResolvedSrc(null)
+        }
+      } else {
+        setResolvedSrc(src)
+      }
+      setIsLoading(false)
+    }
+
+    resolveImage()
+  }, [src])
 
   const handleExpandClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (onImageClick && src) {
-      onImageClick(src)
+    if (onImageClick && resolvedSrc) {
+      onImageClick(resolvedSrc)
     }
   }
 
-  // If no src, don't render anything
-  if (!src) {
+  // Loading state
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4 border border-dashed border-gray-300 rounded bg-gray-50 text-gray-400 text-xs">
-        Image not available test
+        Loading image...
+      </div>
+    )
+  }
+
+  // If no resolved src, show error
+  if (!resolvedSrc) {
+    return (
+      <div className="flex items-center justify-center p-4 border border-dashed border-gray-300 rounded bg-gray-50 text-gray-400 text-xs">
+        Image not available
       </div>
     )
   }
@@ -223,11 +348,11 @@ function ImageWithExpand({
       style={{ display: "inline-block" }}
     >
       <img
-        src={src || "/placeholder.svg"}
+        src={resolvedSrc}
         alt={alt || ""}
         className="max-w-full h-auto shadow-sm"
         onError={(e) => {
-          console.error(`Failed to load image: ${src}`)
+          console.error(`Failed to load image: ${resolvedSrc}`)
           e.currentTarget.style.display = "none"
           const errorDiv = createImageErrorElement()
           e.currentTarget.parentElement?.appendChild(errorDiv)
@@ -264,61 +389,9 @@ export function MarkdownRenderer({
     return content
   }, [content])
 
-  // For image-only cards, use a completely different approach
+  // For image-only cards, we need a special component that handles async loading
   if (imageOnly) {
-    // Extract image info using our utility function
-    const { url, alt } = getImageUrlFromMarkdown(content)
-
-    // Log for debugging
-    console.log(`Image-only card: extracted URL=${url ? url.substring(0, 30) + "..." : "none"}, alt=${alt}`)
-
-    // If no URL was extracted, show a message
-    if (!url) {
-      return (
-        <div className="flex items-center justify-center p-4 bg-gray-50 text-gray-400 text-xs h-full">
-          Image not available test2
-        </div>
-      )
-    }
-
-    const imageStyle: React.CSSProperties = {
-      margin: 0,
-      padding: 0,
-      border: "none",
-      display: "block",
-      borderRadius: 0,
-      width: "100%",
-      objectFit: "cover",
-    }
-
-    // If collapsedImageHeight is provided, set height and crop the image
-    if (collapsedImageHeight) {
-      imageStyle.height = `${collapsedImageHeight}px`
-      imageStyle.objectPosition = "center top"
-    } else {
-      imageStyle.height = "100%"
-    }
-
-    // Direct image rendering without any complex logic
-    return (
-      <img
-        src={url || "/placeholder.svg"}
-        alt={alt}
-        className="w-full object-cover"
-        style={imageStyle}
-        onClick={() => onImageClick?.(url)}
-        onError={(e) => {
-          console.error(`Failed to load image: ${url}`)
-          const parent = e.currentTarget.parentElement
-          if (parent) {
-            e.currentTarget.style.display = "none"
-            // Use utility function to create error element
-            const errorDiv = createImageErrorElement()
-            parent.appendChild(errorDiv)
-          }
-        }}
-      />
-    )
+    return <ImageOnlyRenderer content={content} collapsedImageHeight={collapsedImageHeight} onImageClick={onImageClick} />
   }
 
   // For table-only cards, render only the table content
@@ -661,9 +734,7 @@ export function MarkdownRenderer({
             ),
             // Custom image renderer with local image support
             img: ({ src, alt }) => {
-              // Use utility function to resolve local images
-              const resolvedSrc = resolveImageUrl(src || "")
-              return <ImageWithExpand src={resolvedSrc || "/placeholder.svg"} alt={alt} onImageClick={onImageClick} />
+              return <ImageWithExpand src={src || "/placeholder.svg"} alt={alt} onImageClick={onImageClick} />
             },
             // Custom table renderers
             table: ({ children }) => (

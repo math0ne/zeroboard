@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useRef } from "react"
 import { ImageIcon } from "lucide-react"
+import { imageService } from "@/lib/indexeddb-image-service"
 
 interface ImageUploadProps {
   onImageUploaded: (imageId: string, filename: string) => void
@@ -14,7 +15,6 @@ export function ImageUpload({ onImageUploaded, maxSizeKB = 500 }: ImageUploadPro
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Completely rewritten handleFileUpload function with better debugging
   const handleFileUpload = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       alert("Please select an image file")
@@ -31,41 +31,14 @@ export function ImageUpload({ onImageUploaded, maxSizeKB = 500 }: ImageUploadPro
     setIsUploading(true)
 
     try {
-      // Convert to base64
-      const base64 = await fileToBase64(file)
-
-      if (!base64) {
-        throw new Error("Failed to convert file to base64")
-      }
-
       // Generate unique ID for the image
       const imageId = `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-      // Store in localStorage
-      const imageData = {
-        id: imageId,
-        filename: file.name,
-        base64: base64,
-        size: file.size,
-        type: file.type,
-        uploadedAt: new Date().toISOString(),
-      }
+      // Create blob from file
+      const blob = new Blob([file], { type: file.type })
 
-      // Get existing images
-      let existingImages = {}
-      try {
-        const storedImagesStr = localStorage.getItem("kanban-images")
-        existingImages = storedImagesStr ? JSON.parse(storedImagesStr) : {}
-      } catch (error) {
-        console.error("Error parsing existing images:", error)
-        existingImages = {}
-      }
-
-      // Add new image
-      existingImages[imageId] = imageData
-
-      // Store back to localStorage
-      localStorage.setItem("kanban-images", JSON.stringify(existingImages))
+      // Store in IndexedDB
+      await imageService.storeImage(imageId, file.name, blob, file.type)
 
       console.log("Image uploaded successfully:", {
         id: imageId,
@@ -84,20 +57,6 @@ export function ImageUpload({ onImageUploaded, maxSizeKB = 500 }: ImageUploadPro
     }
   }
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => {
-        if (typeof reader.result === "string") {
-          resolve(reader.result)
-        } else {
-          reject(new Error("Failed to convert file to base64"))
-        }
-      }
-      reader.onerror = (error) => reject(error)
-    })
-  }
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()

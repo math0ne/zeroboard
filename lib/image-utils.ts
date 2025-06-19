@@ -3,12 +3,17 @@
  * @description Utility functions for handling images in markdown content
  */
 
+import { imageService } from './indexeddb-image-service'
+
+// Cache for resolved image URLs to avoid repeated IndexedDB calls
+const imageUrlCache = new Map<string, string>()
+
 /**
  * Extract image URL and alt text from markdown content
  * @param {string} markdown - Markdown content containing an image
- * @returns {Object} Object containing url and alt text
+ * @returns {Promise<Object>} Promise resolving to object containing url and alt text
  */
-export function getImageUrlFromMarkdown(markdown: string): { url: string; alt: string } {
+export async function getImageUrlFromMarkdown(markdown: string): Promise<{ url: string; alt: string }> {
   // Simple regex to extract image URL and alt text
   const match = markdown.match(/!\[([^\]]*)\]\(([^)]+)\)/)
 
@@ -16,14 +21,21 @@ export function getImageUrlFromMarkdown(markdown: string): { url: string; alt: s
     const alt = match[1] || ""
     const url = match[2] || ""
 
-    // Handle local images stored in localStorage
+    // Handle local images stored in IndexedDB
     if (url.startsWith("local:")) {
       try {
         const imageId = url.replace("local:", "")
-        const storedImages = JSON.parse(localStorage.getItem("kanban-images") || "{}")
-        const imageData = storedImages[imageId]
-        if (imageData && imageData.base64) {
-          return { url: imageData.base64, alt }
+        
+        // Check cache first
+        if (imageUrlCache.has(imageId)) {
+          return { url: imageUrlCache.get(imageId)!, alt }
+        }
+
+        // Fetch from IndexedDB
+        const dataUrl = await imageService.getImageAsDataURL(imageId)
+        if (dataUrl) {
+          imageUrlCache.set(imageId, dataUrl)
+          return { url: dataUrl, alt }
         }
       } catch (error) {
         console.error("Error resolving local image:", error)
@@ -39,20 +51,27 @@ export function getImageUrlFromMarkdown(markdown: string): { url: string; alt: s
 }
 
 /**
- * Resolve a local image URL to its base64 representation
+ * Resolve a local image URL to its data URL representation
  * @param {string} src - Image source URL (may be local: prefixed)
- * @returns {string} Resolved image URL or original URL if not local
+ * @returns {Promise<string>} Promise resolving to resolved image URL or original URL if not local
  */
-export function resolveImageUrl(src: string): string {
+export async function resolveImageUrl(src: string): Promise<string> {
   if (!src) return ""
 
   if (src.startsWith("local:")) {
     try {
       const imageId = src.replace("local:", "")
-      const storedImages = JSON.parse(localStorage.getItem("kanban-images") || "{}")
-      const imageData = storedImages[imageId]
-      if (imageData && imageData.base64) {
-        return imageData.base64
+      
+      // Check cache first
+      if (imageUrlCache.has(imageId)) {
+        return imageUrlCache.get(imageId)!
+      }
+
+      // Fetch from IndexedDB
+      const dataUrl = await imageService.getImageAsDataURL(imageId)
+      if (dataUrl) {
+        imageUrlCache.set(imageId, dataUrl)
+        return dataUrl
       }
     } catch (error) {
       console.error("Error resolving local image:", error)

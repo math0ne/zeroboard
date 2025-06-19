@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { KanbanColumn } from "@/components/kanban-column"
 import { TitleMarkdownRenderer } from "@/components/title-markdown-renderer"
+import { imageService } from "@/lib/indexeddb-image-service"
 
 // Update the Card interface to include the new lightBackground property
 export interface Card {
@@ -1348,6 +1349,7 @@ export default function KanbanBoard() {
   const [isLoading, setIsLoading] = useState(true)
   const [boards, setBoards] = useState<Board[]>(defaultBoards)
   const [currentBoardId, setCurrentBoardId] = useState("personal")
+  const [currentBoardTitle, setCurrentBoardTitle] = useState("**Personal** *Kanban* Notes")
   const [isEditingBoardTitle, setIsEditingBoardTitle] = useState(false)
   const [boardTitleValue, setBoardTitleValue] = useState("")
   const [isTitleBarHovering, setIsTitleBarHovering] = useState(false)
@@ -1365,8 +1367,13 @@ export default function KanbanBoard() {
     if (saved) {
       try {
         const data = JSON.parse(saved)
-        setBoards(data.boards || defaultBoards)
-        setCurrentBoardId(data.currentBoardId || "personal")
+        const loadedBoards = data.boards || defaultBoards
+        const loadedBoardId = data.currentBoardId || "personal"
+        const loadedBoard = loadedBoards.find((board: Board) => board.id === loadedBoardId) || loadedBoards[0]
+        
+        setBoards(loadedBoards)
+        setCurrentBoardId(loadedBoardId)
+        setCurrentBoardTitle(loadedBoard.title)
       } catch (error) {
         console.error("Failed to load saved data:", error)
       }
@@ -1380,10 +1387,29 @@ export default function KanbanBoard() {
     localStorage.setItem("kanban-notes", JSON.stringify({ boards, currentBoardId }))
   }, [boards, currentBoardId])
 
-  // Update board title value when current board changes
+
+  // Update board title value when current board title changes
   useEffect(() => {
-    setBoardTitleValue(currentBoard.title)
-  }, [currentBoard.title])
+    console.log('currentBoardTitle changed to:', currentBoardTitle)
+    setBoardTitleValue(currentBoardTitle)
+  }, [currentBoardTitle])
+
+  // Update document title when current board title changes
+  useEffect(() => {
+    // Strip markdown formatting from title for browser tab
+    const stripMarkdown = (text: string) => {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold **text**
+        .replace(/\*(.*?)\*/g, '$1')     // Remove italic *text*
+        .replace(/`(.*?)`/g, '$1')       // Remove inline code `text`
+        .replace(/#{1,6}\s?/g, '')       // Remove headers # text
+        .trim()
+    }
+    
+    const cleanTitle = stripMarkdown(currentBoardTitle)
+    console.log('Setting document title to:', `zeroboard - ${cleanTitle}`, 'from currentBoardTitle:', currentBoardTitle)
+    document.title = `zeroboard - ${cleanTitle}`
+  }, [currentBoardTitle])
 
   // Add click outside listener for dropdown
   useEffect(() => {
@@ -1405,11 +1431,13 @@ export default function KanbanBoard() {
 
   const handleBoardTitleSave = () => {
     if (boardTitleValue.trim()) {
+      const newTitle = boardTitleValue.trim()
       setBoards(
-        boards.map((board) => (board.id === currentBoardId ? { ...board, title: boardTitleValue.trim() } : board)),
+        boards.map((board) => (board.id === currentBoardId ? { ...board, title: newTitle } : board)),
       )
+      setCurrentBoardTitle(newTitle) // Update the dedicated title state
     } else {
-      setBoardTitleValue(currentBoard.title) // Reset if empty
+      setBoardTitleValue(currentBoardTitle) // Reset if empty
     }
     setIsEditingBoardTitle(false)
   }
@@ -1418,7 +1446,7 @@ export default function KanbanBoard() {
     if (e.key === "Enter") {
       handleBoardTitleSave()
     } else if (e.key === "Escape") {
-      setBoardTitleValue(currentBoard.title)
+      setBoardTitleValue(currentBoardTitle)
       setIsEditingBoardTitle(false)
     }
   }
@@ -1452,16 +1480,62 @@ export default function KanbanBoard() {
 
     setBoards([...boards, newBoard])
     setCurrentBoardId(newBoard.id)
+    setCurrentBoardTitle(newBoard.title)
     setIsDropdownOpen(false)
   }
 
-  const exportBoards = () => {
+  const exportBoards = async () => {
     try {
+      // Get all stored images from IndexedDB
+      const storedImages = await imageService.getAllImages()
+
+      // Find all image references in board content to only export used images
+      const usedImageIds = new Set<string>()
+      boards.forEach(board => {
+        board.columns.forEach(column => {
+          column.cards.forEach(card => {
+            // Find local image references in card content
+            const localImageMatches = card.content.match(/local:([a-zA-Z0-9_]+)/g)
+            if (localImageMatches) {
+              localImageMatches.forEach(match => {
+                const imageId = match.replace('local:', '')
+                usedImageIds.add(imageId)
+              })
+            }
+          })
+        })
+      })
+
+      // Only export images that are actually used in the boards
+      const exportImages: { [key: string]: any } = {}
+      for (const imageId of usedImageIds) {
+        const imageData = storedImages.find(img => img.id === imageId)
+        if (imageData) {
+          // Convert blob to base64 for export
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(reader.result as string)
+            reader.onerror = reject
+            reader.readAsDataURL(imageData.blob)
+          })
+
+          exportImages[imageId] = {
+            id: imageData.id,
+            filename: imageData.filename,
+            base64: base64,
+            size: imageData.size,
+            type: imageData.type,
+            uploadedAt: imageData.uploadedAt
+          }
+        }
+      }
+
       const dataToExport = {
         boards,
         currentBoardId,
+        images: exportImages,
         exportDate: new Date().toISOString(),
-        version: "1.0",
+        version: "3.0", // Increment version to indicate IndexedDB format
       }
 
       const dataStr = JSON.stringify(dataToExport, null, 2)
@@ -1470,12 +1544,14 @@ export default function KanbanBoard() {
       const url = URL.createObjectURL(dataBlob)
       const link = document.createElement("a")
       link.href = url
-      link.download = `kanban-notes-export-${new Date().toISOString().split("T")[0]}.json`
+      link.download = `zeroboard-export-${new Date().toISOString().split("T")[0]}.json`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
 
+      const imageCount = Object.keys(exportImages).length
+      alert(`Export successful! Included ${boards.length} boards and ${imageCount} images.`)
       setIsDropdownOpen(false)
     } catch (error) {
       console.error("Failed to export boards:", error)
@@ -1488,7 +1564,7 @@ export default function KanbanBoard() {
     if (!file) return
 
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const importedData = JSON.parse(e.target?.result as string)
 
@@ -1500,10 +1576,58 @@ export default function KanbanBoard() {
           )
 
           if (isValidData) {
+            const loadedBoardId = importedData.currentBoardId || importedData.boards[0]?.id || "personal"
+            const loadedBoard = importedData.boards.find((board: Board) => board.id === loadedBoardId) || importedData.boards[0]
+            
             setBoards(importedData.boards)
-            setCurrentBoardId(importedData.currentBoardId || importedData.boards[0]?.id || "personal")
+            setCurrentBoardId(loadedBoardId)
+            setCurrentBoardTitle(loadedBoard.title)
+            
+            // Handle images if they exist in the import
+            let importedImageCount = 0
+            if (importedData.images && typeof importedData.images === 'object') {
+              try {
+                const imageIds = Object.keys(importedData.images)
+                
+                // Import each image to IndexedDB
+                for (const imageId of imageIds) {
+                  const imageData = importedData.images[imageId]
+                  if (imageData.base64) {
+                    try {
+                      // Convert base64 back to blob
+                      const response = await fetch(imageData.base64)
+                      const blob = await response.blob()
+
+                      // Store in IndexedDB
+                      await imageService.storeImage(
+                        imageData.id,
+                        imageData.filename,
+                        blob,
+                        imageData.type
+                      )
+
+                      importedImageCount++
+                    } catch (error) {
+                      console.warn(`Failed to import image ${imageId}:`, error)
+                      // Continue with other images even if one fails
+                    }
+                  }
+                }
+              } catch (error) {
+                console.error("Error importing images:", error)
+                // Continue with board import even if images fail
+              }
+            }
+
             setIsDropdownOpen(false)
-            alert("Boards imported successfully!")
+            
+            // Show success message with image count
+            const version = importedData.version || "1.0"
+            if (importedImageCount > 0) {
+              alert(`Import successful! Imported ${importedData.boards.length} boards and ${importedImageCount} images (format v${version}).`)
+            } else {
+              alert(`Import successful! Imported ${importedData.boards.length} boards (format v${version}).`)
+            }
           } else {
             throw new Error("Invalid board data structure")
           }
@@ -1529,7 +1653,9 @@ export default function KanbanBoard() {
   }
 
   const switchBoard = (boardId: string) => {
+    const targetBoard = boards.find((board) => board.id === boardId) || boards[0]
     setCurrentBoardId(boardId)
+    setCurrentBoardTitle(targetBoard.title)
     setIsDropdownOpen(false)
     setBoardDeleteConfirming(null)
   }
@@ -1546,6 +1672,7 @@ export default function KanbanBoard() {
         // If we're deleting the current board, switch to another one
         if (boardId === currentBoardId) {
           setCurrentBoardId(newBoards[0].id)
+          setCurrentBoardTitle(newBoards[0].title)
         }
       } else {
         // Don't allow deleting the last board
@@ -1715,7 +1842,7 @@ export default function KanbanBoard() {
                 />
               ) : (
                 <h1 className="font-normal hover:bg-gray-200 px-1 py-0.5 rounded text-sm text-zinc-700">
-                  <TitleMarkdownRenderer content={currentBoard.title} />
+                  <TitleMarkdownRenderer content={currentBoardTitle} />
                 </h1>
               )}
             </div>
