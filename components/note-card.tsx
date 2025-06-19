@@ -311,7 +311,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
    * @returns {JSX.Element} Control buttons
    */
   const renderControlButtons = () => (
-    <div className="absolute top-2 right-2 flex z-10 bg-white/80 rounded p-1">
+    <div className="absolute top-2 right-2 flex z-10 bg-white/95 rounded p-1">
       <Button
         variant="ghost"
         size="sm"
@@ -439,7 +439,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     <>
       <div className={cardClasses} ref={cardRef}>
         <div
-          className="flex items-center justify-between"
+          className="relative"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={handleMouseLeave}
         >
@@ -453,20 +453,20 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
               autoFocus
             />
           ) : (
-            <div className="flex items-center justify-between w-full">
+            <>
               <h3
-                className="text-xs font-semibold text-gray-800 cursor-pointer flex-1 hover:bg-gray-50 px-1 py-0.5 rounded leading-tight"
+                className="text-xs font-semibold text-gray-800 cursor-pointer hover:bg-gray-50 px-1 py-0.5 rounded leading-tight pr-8"
                 onClick={() => setIsEditingTitle(true)}
               >
                 {card.title}
               </h3>
               {isHovering && (
-                <div className="flex">
+                <div className="absolute top-0 right-0 flex z-10 bg-white/95 rounded p-1">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={togglePlain}
-                    className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                    className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
                   >
                     <Minus className="h-2 w-2" />
                   </Button>
@@ -474,7 +474,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
                     variant="ghost"
                     size="sm"
                     onClick={toggleLightBackground}
-                    className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                    className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
                   >
                     <Hash style={{ width: "10px", height: "10px" }} />
                   </Button>
@@ -485,7 +485,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
                       e.stopPropagation()
                       setIsImageUploadOpen(true)
                     }}
-                    className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                    className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
                     title="Add image"
                   >
                     <ImageIcon className="h-2 w-2" />
@@ -494,7 +494,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
                     variant="ghost"
                     size="sm"
                     onClick={toggleCollapse}
-                    className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                    className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
                   >
                     {isCollapsed ? <ChevronDown className="h-2 w-2" /> : <ChevronUp className="h-2 w-2" />}
                   </Button>
@@ -502,7 +502,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
                     variant="ghost"
                     size="sm"
                     onClick={handleDeleteClick}
-                    className={`h-4 w-4 p-0 ml-1 transition-colors duration-200 ${
+                    className={`h-4 w-4 p-0 transition-colors duration-200 ${
                       isDeleteConfirming
                         ? "text-red-600 hover:text-red-700 hover:bg-red-100 bg-red-50"
                         : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
@@ -512,7 +512,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
                   </Button>
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
 
@@ -653,7 +653,7 @@ function AsyncImageOnlyCard({
               variant="ghost"
               size="sm"
               onClick={openImageModal}
-              className="absolute bottom-2 right-2 z-10 h-6 w-6 p-0 bg-white/80 hover:bg-white/90 rounded-full"
+              className="absolute bottom-2 right-2 z-10 h-6 w-6 p-0 bg-white/95 hover:bg-white/100 rounded-full"
             >
               <Maximize2 className="h-3 w-3" />
             </Button>

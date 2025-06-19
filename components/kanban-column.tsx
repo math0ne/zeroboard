@@ -87,7 +87,7 @@ export function KanbanColumn({
 
   return (
     <div className="flex-shrink-0 w-72 min-w-[18rem]">
-      <div className="bg-gray-100 p-2 rounded">
+      <div className="bg-gray-100 p-2 shadow-sm">
         <div
           className="flex items-center justify-between mb-2"
           onMouseEnter={() => setIsHovering(true)}

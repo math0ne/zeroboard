@@ -1829,7 +1829,7 @@ export default function KanbanBoard() {
         <div className="inline-block">
           {/* Board Title Bar - Width matches columns */}
           <div
-            className="bg-gray-100 p-2 rounded mb-2 flex items-center cursor-pointer"
+            className="bg-gray-100 p-2 shadow-sm mb-2 flex items-center cursor-pointer"
             style={{ width: `${columnsWidth}px`, height: "36px" }}
             onMouseEnter={() => !isEditingBoardTitle && setIsTitleBarHovering(true)}
             onMouseLeave={() => !isDropdownOpen && setIsTitleBarHovering(false)}
