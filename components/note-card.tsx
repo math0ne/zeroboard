@@ -10,7 +10,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { ChevronDown, ChevronUp, Hash, Maximize2, Minus, X, ImageIcon, Expand, EyeOff, Eye } from "lucide-react"
+import { ChevronDown, ChevronUp, Hash, Maximize2, Square, X, ImageIcon, Expand, Type } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -332,9 +332,10 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
           e.stopPropagation()
           togglePlain()
         }}
-        className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+        className={`h-4 w-4 p-0 ${isPlain ? 'text-gray-800 hover:text-black' : 'text-gray-300 hover:text-gray-500'}`}
+        title="Toggle border"
       >
-        <Minus className="h-2 w-2" />
+        <Square className="h-2 w-2" />
       </Button>
       <Button
         variant="ghost"
@@ -343,9 +344,10 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
           e.stopPropagation()
           toggleLightBackground()
         }}
-        className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+        className={`h-4 w-4 p-0 ml-1 ${isLightBackground ? 'text-gray-800 hover:text-black' : 'text-gray-300 hover:text-gray-500'}`}
+        title={isLightBackground ? "Remove highlight" : "Highlight card"}
       >
-        <Hash style={{ width: "10px", height: "10px" }} />
+        <Hash className="h-2.5 w-2.5" />
       </Button>
       <Button
         variant="ghost"
@@ -354,10 +356,10 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
           e.stopPropagation()
           toggleTitleVisibility()
         }}
-        className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-        title={isTitleHidden ? "Show title" : "Hide title"}
+        className={`h-4 w-4 p-0 ml-1 ${isTitleHidden ? 'text-gray-800 hover:text-black' : 'text-gray-300 hover:text-gray-500'}`}
+        title="Toggle title"
       >
-        {isTitleHidden ? <Eye className="h-2 w-2" /> : <EyeOff className="h-2 w-2" />}
+        <Type className="h-2 w-2" />
       </Button>
       <Button
         variant="ghost"
@@ -366,10 +368,10 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
           e.stopPropagation()
           setIsImageUploadOpen(true)
         }}
-        className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+        className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900"
         title="Add image"
       >
-        <ImageIcon className="h-2 w-2" />
+        <ImageIcon className="h-1.5 w-1.5" />
       </Button>
       <Button
         variant="ghost"
@@ -378,10 +380,10 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
           e.stopPropagation()
           setIsCardModalOpen(true)
         }}
-        className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+        className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900"
         title="Expand card"
       >
-        <Expand className="h-2 w-2" />
+        <Expand className="h-1.5 w-1.5" />
       </Button>
       <Button
         variant="ghost"
@@ -390,9 +392,10 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
           e.stopPropagation()
           toggleCollapse()
         }}
-        className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+        className={`h-4 w-4 p-0 ml-1 ${isCollapsed ? 'text-gray-800 hover:text-black' : 'text-gray-300 hover:text-gray-500'}`}
+        title={isCollapsed ? "Expand card" : "Collapse card"}
       >
-        {isCollapsed ? <ChevronDown className="h-2 w-2" /> : <ChevronUp className="h-2 w-2" />}
+        {isCollapsed ? <ChevronDown className="h-2.5 w-2.5" /> : <ChevronUp className="h-2.5 w-2.5" />}
       </Button>
       <Button
         variant="ghost"
@@ -403,12 +406,68 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
             ? "text-red-600 hover:text-red-700 hover:bg-red-100 bg-red-50"
             : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
         }`}
+        title={isDeleteConfirming ? "Click again to delete" : "Delete card"}
       >
         <X className="h-2 w-2" />
       </Button>
     </div>
   )
 
+  /**
+   * Render control buttons for image-only cards (only delete)
+   * @returns {JSX.Element} Control buttons
+   */
+  const renderImageOnlyControlButtons = () => (
+    <div className="absolute top-2 right-2 flex z-10 bg-white/95 rounded p-1">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleDeleteClick}
+        className={`h-4 w-4 p-0 transition-colors duration-200 ${
+          isDeleteConfirming
+            ? "text-red-600 hover:text-red-700 hover:bg-red-100 bg-red-50"
+            : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+        }`}
+        title={isDeleteConfirming ? "Click again to delete" : "Delete card"}
+      >
+        <X className="h-2 w-2" />
+      </Button>
+    </div>
+  )
+
+  /**
+   * Render control buttons for collapsed image cards (only delete and collapse)
+   * @returns {JSX.Element} Control buttons
+   */
+  const renderCollapsedImageControlButtons = () => (
+    <div className="absolute top-2 right-2 flex z-10 bg-white/95 rounded p-1">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation()
+          toggleCollapse()
+        }}
+        className={`h-4 w-4 p-0 ${isCollapsed ? 'text-gray-600 hover:text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+        title={isCollapsed ? "Expand card" : "Collapse card"}
+      >
+        {isCollapsed ? <ChevronDown className="h-2.5 w-2.5" /> : <ChevronUp className="h-2.5 w-2.5" />}
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleDeleteClick}
+        className={`h-4 w-4 p-0 ml-1 transition-colors duration-200 ${
+          isDeleteConfirming
+            ? "text-red-600 hover:text-red-700 hover:bg-red-100 bg-red-50"
+            : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+        }`}
+        title={isDeleteConfirming ? "Click again to delete" : "Delete card"}
+      >
+        <X className="h-2 w-2" />
+      </Button>
+    </div>
+  )
 
   // For image-only cards - completely different rendering
   if (isImageOnlyCard && !isEditingTitle && !isEditingContent) {
@@ -426,7 +485,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         onImageModalClose={() => setIsImageModalOpen(false)}
         onImageUploadClose={() => setIsImageUploadOpen(false)}
         onImageSelect={handleImageSelected}
-        renderControlButtons={renderControlButtons}
+        renderControlButtons={renderImageOnlyControlButtons}
         isPlain={isPlain}
         isLightBackground={isLightBackground}
       />
@@ -464,7 +523,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         onImageModalClose={() => setIsImageModalOpen(false)}
         onImageUploadClose={() => setIsImageUploadOpen(false)}
         onImageSelect={handleImageSelected}
-        renderControlButtons={renderControlButtons}
+        renderControlButtons={renderCollapsedImageControlButtons}
         isPlain={isPlain}
         isLightBackground={isLightBackground}
       />
@@ -487,26 +546,28 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
               variant="ghost"
               size="sm"
               onClick={togglePlain}
-              className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              className={`h-4 w-4 p-0 ${isPlain ? 'text-gray-800 hover:text-black' : 'text-gray-300 hover:text-gray-500'}`}
+              title="Toggle border"
             >
-              <Minus className="h-2 w-2" />
+              <Square className="h-2 w-2" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleLightBackground}
-              className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              className={`h-4 w-4 p-0 ml-1 ${isLightBackground ? 'text-gray-800 hover:text-black' : 'text-gray-300 hover:text-gray-500'}`}
+              title={isLightBackground ? "Remove highlight" : "Highlight card"}
             >
-              <Hash style={{ width: "10px", height: "10px" }} />
+              <Hash className="h-2.5 w-2.5" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleTitleVisibility}
-              className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-              title={isTitleHidden ? "Show title" : "Hide title"}
+              className={`h-4 w-4 p-0 ml-1 ${isTitleHidden ? 'text-gray-800 hover:text-black' : 'text-gray-300 hover:text-gray-500'}`}
+              title="Toggle title"
             >
-              {isTitleHidden ? <Eye className="h-2 w-2" /> : <EyeOff className="h-2 w-2" />}
+              <Type className="h-2 w-2" />
             </Button>
             <Button
               variant="ghost"
@@ -515,10 +576,10 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
                 e.stopPropagation()
                 setIsImageUploadOpen(true)
               }}
-              className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900"
               title="Add image"
             >
-              <ImageIcon className="h-2 w-2" />
+              <ImageIcon className="h-1.5 w-1.5" />
             </Button>
             <Button
               variant="ghost"
@@ -527,18 +588,19 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
                 e.stopPropagation()
                 setIsCardModalOpen(true)
               }}
-              className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900"
               title="Expand card"
             >
-              <Expand className="h-2 w-2" />
+              <Expand className="h-1.5 w-1.5" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleCollapse}
-              className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              className={`h-4 w-4 p-0 ml-1 ${isCollapsed ? 'text-gray-800 hover:text-black' : 'text-gray-300 hover:text-gray-500'}`}
+              title={isCollapsed ? "Expand card" : "Collapse card"}
             >
-              {isCollapsed ? <ChevronDown className="h-2 w-2" /> : <ChevronUp className="h-2 w-2" />}
+              {isCollapsed ? <ChevronDown className="h-2.5 w-2.5" /> : <ChevronUp className="h-2.5 w-2.5" />}
             </Button>
             <Button
               variant="ghost"
@@ -549,6 +611,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
                   ? "text-red-600 hover:text-red-700 hover:bg-red-100 bg-red-50"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
               }`}
+              title={isDeleteConfirming ? "Click again to delete" : "Delete card"}
             >
               <X className="h-2 w-2" />
             </Button>
@@ -723,8 +786,9 @@ function AsyncImageOnlyCard({
               size="sm"
               onClick={openImageModal}
               className="absolute bottom-2 right-2 z-10 h-6 w-6 p-0 bg-white/95 hover:bg-white/100 rounded-full"
+              title="View full size"
             >
-              <Maximize2 className="h-3 w-3" />
+              <Maximize2 className="h-2.5 w-2.5" />
             </Button>
           </>
         )}
