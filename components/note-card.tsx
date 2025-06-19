@@ -313,10 +313,19 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     onUpdate({ content: newContent })
   }
 
-  // Determine card styling based on mode
+  // Determine card styling based on mode - add extra padding for DEFAULT (non-plain) collapsed cards with visible titles
+  const shouldAddExtraPadding = !isPlain && isCollapsed && !isTitleHidden
   const cardClasses = isPlain
-    ? `pt-2 pl-2 pr-2 ${isCollapsed && !isTitleHidden ? 'pb-[13px]' : 'pb-2'}`
+    ? `pt-2 pl-2 pr-2 pb-2`
     : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 pt-2 pl-2 pr-2 pb-0 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`
+  
+  // Apply extra padding via inline style if needed
+  const cardStyle = shouldAddExtraPadding ? { paddingBottom: '6px' } : {}
+  
+  // Debug log (remove after testing)
+  if (!isPlain && isCollapsed) {
+    console.log(`Card ${card.id}: plain=${isPlain}, collapsed=${isCollapsed}, titleHidden=${isTitleHidden}, shouldAddExtraPadding=${shouldAddExtraPadding}`)
+  }
 
   /**
    * Render control buttons for the card
@@ -473,107 +482,108 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   // Standard card rendering
   return (
     <>
-      <div className={cardClasses} ref={cardRef}>
-        <div
-          className="relative"
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={handleMouseLeave}
-        >
-          {!isTitleHidden && (
-            <>
-              {isEditingTitle ? (
-                <Input
-                  value={titleValue}
-                  onChange={(e) => setTitleValue(e.target.value)}
-                  onBlur={handleTitleSave}
-                  onKeyDown={handleTitleKeyDown}
-                  className="text-xs font-semibold h-5 px-1 py-0 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-gray-800"
-                  autoFocus
-                />
-              ) : (
-                <h3
-                  className="text-xs font-semibold text-gray-800 cursor-pointer hover:bg-gray-50 px-1 py-0.5 rounded leading-tight pr-8"
-                  onClick={() => setIsEditingTitle(true)}
-                >
-                  {card.title}
-                </h3>
-              )}
-            </>
-          )}
-          {isHovering && (
-            <div className={`absolute ${isTitleHidden ? 'top-2' : 'top-0'} right-0 flex z-10 bg-white/95 rounded p-1`}>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={togglePlain}
-                className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+      <div 
+        className={`${cardClasses} relative`} 
+        style={cardStyle}
+        ref={cardRef}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={handleMouseLeave}
+      >
+        {isHovering && (
+          <div className="absolute top-2 right-2 flex z-10 bg-white/95 rounded p-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={togglePlain}
+              className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+            >
+              <Minus className="h-2 w-2" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleLightBackground}
+              className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+            >
+              <Hash style={{ width: "10px", height: "10px" }} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTitleVisibility}
+              className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              title={isTitleHidden ? "Show title" : "Hide title"}
+            >
+              {isTitleHidden ? <Eye className="h-2 w-2" /> : <EyeOff className="h-2 w-2" />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsImageUploadOpen(true)
+              }}
+              className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              title="Add image"
+            >
+              <ImageIcon className="h-2 w-2" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsCardModalOpen(true)
+              }}
+              className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              title="Expand card"
+            >
+              <Expand className="h-2 w-2" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleCollapse}
+              className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+            >
+              {isCollapsed ? <ChevronDown className="h-2 w-2" /> : <ChevronUp className="h-2 w-2" />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDeleteClick}
+              className={`h-4 w-4 p-0 ml-1 transition-colors duration-200 ${
+                isDeleteConfirming
+                  ? "text-red-600 hover:text-red-700 hover:bg-red-100 bg-red-50"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              }`}
+            >
+              <X className="h-2 w-2" />
+            </Button>
+          </div>
+        )}
+        
+        {!isTitleHidden && (
+          <div>
+            {isEditingTitle ? (
+              <Input
+                value={titleValue}
+                onChange={(e) => setTitleValue(e.target.value)}
+                onBlur={handleTitleSave}
+                onKeyDown={handleTitleKeyDown}
+                className="text-xs font-semibold h-5 px-1 py-0 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-gray-800"
+                autoFocus
+              />
+            ) : (
+              <h3
+                className="text-xs font-semibold text-gray-800 cursor-pointer hover:bg-gray-50 px-1 py-0.5 rounded leading-tight pr-8"
+                onClick={() => setIsEditingTitle(true)}
               >
-                <Minus className="h-2 w-2" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleLightBackground}
-                className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-              >
-                <Hash style={{ width: "10px", height: "10px" }} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleTitleVisibility}
-                className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-                title={isTitleHidden ? "Show title" : "Hide title"}
-              >
-                {isTitleHidden ? <Eye className="h-2 w-2" /> : <EyeOff className="h-2 w-2" />}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setIsImageUploadOpen(true)
-                }}
-                className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-                title="Add image"
-              >
-                <ImageIcon className="h-2 w-2" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setIsCardModalOpen(true)
-                }}
-                className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-                title="Expand card"
-              >
-                <Expand className="h-2 w-2" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleCollapse}
-                className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-              >
-                {isCollapsed ? <ChevronDown className="h-2 w-2" /> : <ChevronUp className="h-2 w-2" />}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDeleteClick}
-                className={`h-4 w-4 p-0 ml-1 transition-colors duration-200 ${
-                  isDeleteConfirming
-                    ? "text-red-600 hover:text-red-700 hover:bg-red-100 bg-red-50"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-                }`}
-              >
-                <X className="h-2 w-2" />
-              </Button>
-            </div>
-          )}
-        </div>
+                {card.title}
+              </h3>
+            )}
+          </div>
+        )}
 
         {!isCollapsed && (
           <div className="text-xs leading-tight pt-2">

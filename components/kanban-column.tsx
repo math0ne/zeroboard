@@ -8,7 +8,7 @@ import { Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { NoteCard } from "./note-card"
-import type { Column, Card } from "../page"
+import type { Column, Card } from "../app/page"
 import { TitleMarkdownRenderer } from "@/components/title-markdown-renderer"
 
 interface KanbanColumnProps {
@@ -18,6 +18,7 @@ interface KanbanColumnProps {
   onAddCard: (columnId: string, card: Omit<Card, "id" | "createdAt" | "updatedAt">) => void
   onUpdateCard: (columnId: string, cardId: string, updates: Partial<Card>) => void
   onDeleteCard: (columnId: string, cardId: string) => void
+  dragHandleProps?: any
 }
 
 export function KanbanColumn({
@@ -27,6 +28,7 @@ export function KanbanColumn({
   onAddCard,
   onUpdateCard,
   onDeleteCard,
+  dragHandleProps,
 }: KanbanColumnProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [titleValue, setTitleValue] = useState(column.title)
@@ -104,12 +106,22 @@ export function KanbanColumn({
             />
           ) : (
             <div className="flex items-center justify-between w-full">
-              <h2
-                className="font-normal text-gray-700 cursor-pointer hover:bg-gray-200 px-1 py-0.5 rounded flex-1 text-sm"
-                onClick={() => setIsEditingTitle(true)}
-              >
-                <TitleMarkdownRenderer content={column.title} />
-              </h2>
+              <div className="flex items-center flex-1">
+                <div 
+                  {...dragHandleProps}
+                  className="w-3 h-4 mr-1 cursor-grab active:cursor-grabbing opacity-30 hover:opacity-60 flex items-center justify-center"
+                  title="Drag to reorder column"
+                >
+                  <div className="w-1 h-1 bg-gray-500 rounded-full mb-px"></div>
+                  <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                </div>
+                <h2
+                  className="font-normal text-gray-700 cursor-pointer hover:bg-gray-200 px-1 py-0.5 rounded flex-1 text-sm"
+                  onClick={() => setIsEditingTitle(true)}
+                >
+                  <TitleMarkdownRenderer content={column.title} />
+                </h2>
+              </div>
               {isHovering && (
                 <div className="flex">
                   <Button

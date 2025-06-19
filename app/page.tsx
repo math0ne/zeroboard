@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { DragDropContext } from "@hello-pangea/dnd"
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
 import { Plus, ChevronDown, X, Download, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -1699,8 +1699,21 @@ export default function KanbanBoard() {
   const handleDragEnd = (result: any) => {
     if (!result.destination) return
 
-    const { source, destination } = result
+    const { source, destination, type } = result
 
+    // Handle column reordering
+    if (type === 'COLUMN') {
+      const newColumns = Array.from(currentBoard.columns)
+      const [reorderedColumn] = newColumns.splice(source.index, 1)
+      newColumns.splice(destination.index, 0, reorderedColumn)
+
+      setBoards(boards.map((board) => 
+        board.id === currentBoardId ? { ...board, columns: newColumns } : board
+      ))
+      return
+    }
+
+    // Handle card reordering/moving (existing logic)
     if (source.droppableId === destination.droppableId) {
       // Reordering within the same column
       const column = currentBoard.columns.find((col) => col.id === source.droppableId)
@@ -1957,20 +1970,39 @@ export default function KanbanBoard() {
           </div>
 
           <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="flex gap-2 pb-4 min-w-fit">
-              {currentBoard.columns.map((column) => (
-                <div key={column.id} className="flex-shrink-0 w-72 min-w-[18rem]">
-                  <KanbanColumn
-                    column={column}
-                    onUpdateColumn={updateColumn}
-                    onDeleteColumn={deleteColumn}
-                    onAddCard={addCard}
-                    onUpdateCard={updateCard}
-                    onDeleteCard={deleteCard}
-                  />
+            <Droppable droppableId="columns" direction="horizontal" type="COLUMN">
+              {(provided, snapshot) => (
+                <div 
+                  className={`flex gap-2 pb-4 min-w-fit ${snapshot.isDraggingOver ? 'bg-blue-50 rounded p-2' : ''}`}
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                >
+                  {currentBoard.columns.map((column, index) => (
+                    <Draggable key={column.id} draggableId={column.id} index={index} type="COLUMN">
+                      {(provided, snapshot) => (
+                        <div 
+                          key={column.id} 
+                          className={`flex-shrink-0 w-72 min-w-[18rem] ${snapshot.isDragging ? 'opacity-70 rotate-2' : ''}`}
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                        >
+                          <KanbanColumn
+                            column={column}
+                            onUpdateColumn={updateColumn}
+                            onDeleteColumn={deleteColumn}
+                            onAddCard={addCard}
+                            onUpdateCard={updateCard}
+                            onDeleteCard={deleteCard}
+                            dragHandleProps={provided.dragHandleProps}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
                 </div>
-              ))}
-            </div>
+              )}
+            </Droppable>
           </DragDropContext>
         </div>
       </div>
