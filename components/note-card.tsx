@@ -303,7 +303,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   // Determine card styling based on mode
   const cardClasses = isPlain
     ? "p-2"
-    : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 p-2 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`
+    : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 pt-2 pl-2 pr-2 pb-0 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`
 
   /**
    * Render control buttons for the card

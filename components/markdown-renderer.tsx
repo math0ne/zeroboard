@@ -220,13 +220,12 @@ function ImageWithExpand({
       className="relative inline-block"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      style={{ margin: "0 0 10px 0", display: "inline-block" }}
+      style={{ display: "inline-block" }}
     >
       <img
         src={src || "/placeholder.svg"}
         alt={alt || ""}
-        className="max-w-full h-auto shadow-sm mb-1"
-        style={{ margin: "0 0 10px 0" }}
+        className="max-w-full h-auto shadow-sm"
         onError={(e) => {
           console.error(`Failed to load image: ${src}`)
           e.currentTarget.style.display = "none"
