@@ -7,9 +7,7 @@
 
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import { ChevronDown, ChevronUp, Hash, Maximize2, Square, X, ImageIcon, Expand, Type } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -127,6 +125,37 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
       }
     }
   }, [isEditingContent, contentValue])
+
+  // Document-level mouse tracking to catch stuck hover states
+  useEffect(() => {
+    if (!isHovering) return
+
+    const handleDocumentMouseMove = (e: MouseEvent) => {
+      if (cardRef.current) {
+        const rect = cardRef.current.getBoundingClientRect()
+        const isMouseInCard = 
+          e.clientX >= rect.left && 
+          e.clientX <= rect.right && 
+          e.clientY >= rect.top && 
+          e.clientY <= rect.bottom
+
+        if (!isMouseInCard) {
+          setIsHovering(false)
+          setIsDeleteConfirming(false)
+        }
+      }
+    }
+
+    // Add listener with a small delay to avoid immediate firing
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousemove', handleDocumentMouseMove)
+    }, 50)
+
+    return () => {
+      clearTimeout(timeoutId)
+      document.removeEventListener('mousemove', handleDocumentMouseMove)
+    }
+  }, [isHovering])
 
   /**
    * Toggle card collapsed state
@@ -253,6 +282,14 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   const handleMouseLeave = () => {
     setIsHovering(false)
     // Reset delete confirmation when mouse leaves the card
+    setIsDeleteConfirming(false)
+  }
+
+  /**
+   * Force hide hover state (for drag events and other cases)
+   */
+  const forceHideHover = () => {
+    setIsHovering(false)
     setIsDeleteConfirming(false)
   }
 
@@ -488,6 +525,8 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         renderControlButtons={renderImageOnlyControlButtons}
         isPlain={isPlain}
         isLightBackground={isLightBackground}
+        onDragStart={forceHideHover}
+        onDragEnd={forceHideHover}
       />
     )
   }
@@ -500,6 +539,8 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={handleMouseLeave}
         onClick={startEditingContent}
+        onDragStart={forceHideHover}
+        onDragEnd={forceHideHover}
       >
         {isHovering && renderControlButtons()}
         <MarkdownRenderer content={card.content} tableOnly={true} onImageClick={handleImageClick} />
@@ -526,6 +567,8 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         renderControlButtons={renderCollapsedImageControlButtons}
         isPlain={isPlain}
         isLightBackground={isLightBackground}
+        onDragStart={forceHideHover}
+        onDragEnd={forceHideHover}
       />
     )
   }
@@ -539,6 +582,8 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         ref={cardRef}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={handleMouseLeave}
+        onDragStart={forceHideHover}
+        onDragEnd={forceHideHover}
       >
         {isHovering && (
           <div className="absolute top-2 right-2 flex z-10 bg-white/95 rounded p-1">
@@ -710,7 +755,9 @@ function AsyncImageOnlyCard({
   onImageSelect, 
   renderControlButtons, 
   isPlain, 
-  isLightBackground 
+  isLightBackground,
+  onDragStart,
+  onDragEnd
 }: {
   card: CardType
   isHovering: boolean
@@ -727,6 +774,8 @@ function AsyncImageOnlyCard({
   renderControlButtons: () => React.ReactNode
   isPlain: boolean
   isLightBackground: boolean
+  onDragStart?: () => void
+  onDragEnd?: () => void
 }) {
   const [imageData, setImageData] = useState<{ url: string; alt: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -777,6 +826,8 @@ function AsyncImageOnlyCard({
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         onClick={onClick}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
       >
         {isHovering && (
           <>
@@ -834,7 +885,9 @@ function AsyncCollapsedImageCard({
   onImageSelect, 
   renderControlButtons, 
   isPlain, 
-  isLightBackground 
+  isLightBackground,
+  onDragStart,
+  onDragEnd
 }: {
   card: CardType
   isHovering: boolean
@@ -851,6 +904,8 @@ function AsyncCollapsedImageCard({
   renderControlButtons: () => React.ReactNode
   isPlain: boolean
   isLightBackground: boolean
+  onDragStart?: () => void
+  onDragEnd?: () => void
 }) {
   const [imageData, setImageData] = useState<{ url: string; alt: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -897,6 +952,8 @@ function AsyncCollapsedImageCard({
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         onClick={onClick}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
       >
         {isHovering && renderControlButtons()}
         <img
