@@ -1398,13 +1398,15 @@ export default function KanbanBoard() {
 
   // Update document title when current board title changes
   useEffect(() => {
-    // Strip markdown formatting from title for browser tab
+    // Strip markdown formatting and special characters from title for browser tab
     const stripMarkdown = (text: string) => {
       return text
         .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold **text**
         .replace(/\*(.*?)\*/g, '$1')     // Remove italic *text*
         .replace(/`(.*?)`/g, '$1')       // Remove inline code `text`
         .replace(/#{1,6}\s?/g, '')       // Remove headers # text
+        .replace(/[^\w\s]/g, '')         // Remove all special characters except letters, numbers, and spaces
+        .replace(/\s+/g, ' ')            // Replace multiple spaces with single space
         .trim()
     }
     
@@ -1973,7 +1975,7 @@ export default function KanbanBoard() {
             <Droppable droppableId="columns" direction="horizontal" type="COLUMN">
               {(provided, snapshot) => (
                 <div 
-                  className={`flex gap-2 pb-4 min-w-fit ${snapshot.isDraggingOver ? 'bg-blue-50 rounded p-2' : ''}`}
+                  className="flex gap-2 pb-4 min-w-fit"
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                 >

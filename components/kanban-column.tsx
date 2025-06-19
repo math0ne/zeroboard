@@ -107,15 +107,8 @@ export function KanbanColumn({
           ) : (
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center flex-1">
-                <div 
-                  {...dragHandleProps}
-                  className="w-3 h-4 mr-1 cursor-grab active:cursor-grabbing opacity-30 hover:opacity-60 flex items-center justify-center"
-                  title="Drag to reorder column"
-                >
-                  <div className="w-1 h-1 bg-gray-500 rounded-full mb-px"></div>
-                  <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
-                </div>
                 <h2
+                  {...dragHandleProps}
                   className="font-normal text-gray-700 cursor-pointer hover:bg-gray-200 px-1 py-0.5 rounded flex-1 text-sm"
                   onClick={() => setIsEditingTitle(true)}
                 >
