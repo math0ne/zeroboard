@@ -219,12 +219,12 @@ Try hovering over this card's title to see the icons and toggle options.`,
             content: `\`\`\`javascript
 // TODO: Optimize this function
 function processData(data) {
-  return data
-    .filter(item => item.active)
-    .map(item => ({
-      ...item,
-      processed: true
-    }));
+return data
+  .filter(item => item.active)
+  .map(item => ({
+    ...item,
+    processed: true
+  }));
 }
 \`\`\`
 
@@ -412,9 +412,9 @@ function processData(data) {
 ### Day 2 - Hiking Adventure  
 - **Trail**: Emerald Lake Trail (3.2 miles)
 - **Highlights**: 
-  - Crystal clear alpine lakes
-  - Wildlife spotting (elk, chipmunks)
-  - Breathtaking mountain vistas
+- Crystal clear alpine lakes
+- Wildlife spotting (elk, chipmunks)
+- Breathtaking mountain vistas
 
 ### Day 3 - Photography
 - Early morning shoot at Sprague Lake
@@ -1356,8 +1356,39 @@ Now using TypeScript in all new projects. The type safety and developer experien
 ]
 
 export default function KanbanBoard() {
-  const [boards, setBoards] = useState<Board[]>(defaultBoards)
-  const [currentBoardId, setCurrentBoardId] = useState("personal")
+  // Initialize boards state by checking localStorage first
+  const [boards, setBoards] = useState<Board[]>(() => {
+    // Check if we're in the browser environment
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("kanban-notes")
+        if (saved) {
+          const data = JSON.parse(saved)
+          return data.boards || defaultBoards
+        }
+      } catch (error) {
+        console.error("Failed to load saved data:", error)
+      }
+    }
+    return defaultBoards
+  })
+
+  const [currentBoardId, setCurrentBoardId] = useState<string>(() => {
+    // Check if we're in the browser environment
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("kanban-notes")
+        if (saved) {
+          const data = JSON.parse(saved)
+          return data.currentBoardId || "personal"
+        }
+      } catch (error) {
+        console.error("Failed to load saved data:", error)
+      }
+    }
+    return "personal"
+  })
+
   const [isEditingBoardTitle, setIsEditingBoardTitle] = useState(false)
   const [boardTitleValue, setBoardTitleValue] = useState("")
   const [isTitleBarHovering, setIsTitleBarHovering] = useState(false)
@@ -1368,20 +1399,6 @@ export default function KanbanBoard() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const currentBoard = boards.find((board) => board.id === currentBoardId) || boards[0]
-
-  // Load data from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("kanban-notes")
-    if (saved) {
-      try {
-        const data = JSON.parse(saved)
-        setBoards(data.boards || defaultBoards)
-        setCurrentBoardId(data.currentBoardId || "personal")
-      } catch (error) {
-        console.error("Failed to load saved data:", error)
-      }
-    }
-  }, [])
 
   // Save to localStorage whenever boards or current board change
   useEffect(() => {
