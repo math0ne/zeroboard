@@ -40,17 +40,10 @@ export function ImageUpload({ onImageUploaded, maxSizeKB = 5000 }: ImageUploadPr
       // Store in IndexedDB
       await imageService.storeImage(imageId, file.name, blob, file.type)
 
-      console.log("Image uploaded successfully:", {
-        id: imageId,
-        filename: file.name,
-        size: `${fileSizeKB.toFixed(1)}KB`,
-        type: file.type,
-      })
 
       // Return the image ID
       onImageUploaded(imageId, file.name)
     } catch (error) {
-      console.error("Error uploading image:", error)
       alert("Error uploading image. Please try again.")
     } finally {
       setIsUploading(false)

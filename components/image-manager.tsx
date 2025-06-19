@@ -21,7 +21,6 @@ export function ImageManager({ onImageSelect, showSelector = false }: ImageManag
   const loadImages = async () => {
     try {
       const storedImages = await imageService.getAllImages()
-      console.log(`Loaded ${storedImages.length} images from IndexedDB`)
       setImages(storedImages)
 
       // Create object URLs for display
@@ -31,7 +30,6 @@ export function ImageManager({ onImageSelect, showSelector = false }: ImageManag
       }
       setImageUrls(urls)
     } catch (error) {
-      console.error("Error loading images:", error)
       setImages([])
     }
   }
@@ -48,7 +46,6 @@ export function ImageManager({ onImageSelect, showSelector = false }: ImageManag
   const deleteImage = async (imageId: string) => {
     try {
       await imageService.deleteImage(imageId)
-      console.log(`Deleted image: ${imageId}`)
       
       // Revoke the object URL for the deleted image
       if (imageUrls[imageId]) {
@@ -57,7 +54,7 @@ export function ImageManager({ onImageSelect, showSelector = false }: ImageManag
       
       loadImages()
     } catch (error) {
-      console.error("Error deleting image:", error)
+      // Error deleting image
     }
   }
 
@@ -118,7 +115,7 @@ export function ImageManager({ onImageSelect, showSelector = false }: ImageManag
                 alt={image.filename}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  console.error(`Failed to load image: ${image.id}`)
+                  // Failed to load image
                   e.currentTarget.src =
                     "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20fill%3D%22%23ccc%22%20d%3D%22M30%2026h-28v-20h28v20zm2-22h-32v24h32v-24z%22%2F%3E%3Cpath%20fill%3D%22%23ccc%22%20d%3D%22M12%2016l6-8%206%208v6h-12v-6z%22%2F%3E%3Ccircle%20fill%3D%22%23ccc%22%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%222%22%2F%3E%3C%2Fsvg%3E"
                 }}

@@ -28,7 +28,6 @@ export function ImageModal({ imageUrl, onClose }: ImageModalProps) {
       setError(false)
     }
     img.onerror = () => {
-      console.error("Failed to load image in modal:", imageUrl)
       setError(true)
       setIsLoading(false)
     }

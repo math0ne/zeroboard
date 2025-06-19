@@ -78,9 +78,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
    * @param {string} url - Image URL to display in modal
    */
   const handleImageClick = (url: string) => {
-    console.log("handleImageClick called with:", url ? "Valid URL" : "Empty URL")
     if (!url) {
-      console.error("Attempted to open image modal with empty URL")
       return
     }
     setImageUrl(url)
@@ -296,8 +294,6 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     const { url } = await getImageUrlFromMarkdown(card.content)
     if (url) {
       handleImageClick(url)
-    } else {
-      console.error("Failed to extract image URL for modal")
     }
   }
 
@@ -322,10 +318,6 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   // Apply extra padding via inline style if needed
   const cardStyle = shouldAddExtraPadding ? { paddingBottom: '6px' } : {}
   
-  // Debug log (remove after testing)
-  if (!isPlain && isCollapsed) {
-    console.log(`Card ${card.id}: plain=${isPlain}, collapsed=${isCollapsed}, titleHidden=${isTitleHidden}, shouldAddExtraPadding=${shouldAddExtraPadding}`)
-  }
 
   /**
    * Render control buttons for the card
@@ -683,7 +675,6 @@ function AsyncImageOnlyCard({
         const { url, alt } = await getImageUrlFromMarkdown(card.content)
         setImageData({ url, alt })
       } catch (error) {
-        console.error("Error loading image:", error)
         setImageData(null)
       }
       setIsLoading(false)
@@ -743,7 +734,6 @@ function AsyncImageOnlyCard({
           className="w-full object-cover"
           style={{ height: "auto" }}
           onError={(e) => {
-            console.error(`Failed to load image: ${imageData.url}`)
             e.currentTarget.style.display = "none"
             const errorDiv = createImageErrorElement()
             e.currentTarget.parentElement?.appendChild(errorDiv)
@@ -808,7 +798,6 @@ function AsyncCollapsedImageCard({
         const { url, alt } = await getImageUrlFromMarkdown(card.content)
         setImageData({ url, alt })
       } catch (error) {
-        console.error("Error loading image:", error)
         setImageData(null)
       }
       setIsLoading(false)
@@ -852,7 +841,6 @@ function AsyncCollapsedImageCard({
           className="w-full object-cover"
           style={{ height: "45px", objectPosition: "center top" }}
           onError={(e) => {
-            console.error(`Failed to load image: ${imageData.url}`)
             e.currentTarget.style.display = "none"
             const errorDiv = createImageErrorElement()
             e.currentTarget.parentElement?.appendChild(errorDiv)

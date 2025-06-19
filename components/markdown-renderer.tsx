@@ -207,7 +207,6 @@ function ImageOnlyRenderer({
         const { url, alt } = await getImageUrlFromMarkdown(content)
         setImageData({ url, alt })
       } catch (error) {
-        console.error("Error loading image:", error)
         setImageData(null)
       }
       setIsLoading(false)
@@ -260,7 +259,6 @@ function ImageOnlyRenderer({
       style={imageStyle}
       onClick={() => onImageClick?.(imageData.url)}
       onError={(e) => {
-        console.error(`Failed to load image: ${imageData.url}`)
         const parent = e.currentTarget.parentElement
         if (parent) {
           e.currentTarget.style.display = "none"
@@ -320,7 +318,6 @@ function ImageWithExpand({
         const resolved = await resolveImageUrl(src)
         setResolvedSrc(resolved || null)
       } catch (error) {
-        console.error("Error resolving image:", error)
         setResolvedSrc(null)
       }
       
@@ -369,7 +366,6 @@ function ImageWithExpand({
         alt={alt || ""}
         className="max-w-full h-auto shadow-sm"
         onError={(e) => {
-          console.error(`Failed to load image: ${resolvedSrc}`)
           e.currentTarget.style.display = "none"
           const errorDiv = createImageErrorElement()
           e.currentTarget.parentElement?.appendChild(errorDiv)

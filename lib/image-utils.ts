@@ -44,7 +44,7 @@ export async function getImageUrlFromMarkdown(markdown: string): Promise<{ url: 
           return { url: dataUrl, alt }
         }
       } catch (error) {
-        console.error("Error resolving local image:", error)
+        // Error resolving local image
       }
       return { url: "", alt }
     }
@@ -88,7 +88,7 @@ export async function resolveImageUrl(src: string): Promise<string> {
         return dataUrl
       }
     } catch (error) {
-      console.error("Error resolving local image:", error)
+      // Error resolving local image
     }
     return ""
   }
