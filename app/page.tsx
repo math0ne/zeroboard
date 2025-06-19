@@ -24,6 +24,7 @@ export interface Card {
   collapsed?: boolean
   plain?: boolean
   lightBackground?: boolean
+  titleHidden?: boolean
 }
 
 export interface Column {

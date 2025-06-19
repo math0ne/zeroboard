@@ -10,14 +10,15 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { ChevronDown, ChevronUp, Hash, Maximize2, Minus, X, ImageIcon } from "lucide-react"
+import { ChevronDown, ChevronUp, Hash, Maximize2, Minus, X, ImageIcon, Expand, EyeOff, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { MarkdownRenderer } from "./markdown-renderer"
 import { ImageModal } from "./image-modal"
 import { ImageUploadModal } from "./image-upload-modal"
-import type { Card as CardType } from "../page"
+import { CardModal } from "./card-modal"
+import type { Card as CardType } from "../app/page"
 import {
   getImageUrlFromMarkdown,
   isImageOnlyContent,
@@ -63,6 +64,8 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   const [isImageModalOpen, setIsImageModalOpen] = useState(false)
   const [imageUrl, setImageUrl] = useState("")
   const [isImageUploadOpen, setIsImageUploadOpen] = useState(false)
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false)
+  const [isTitleHidden, setIsTitleHidden] = useState(card.titleHidden || false)
 
   // Use utility functions to determine card type
   const isImageOnlyCard = isImageOnlyContent(card.content)
@@ -155,6 +158,15 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   }
 
   /**
+   * Toggle card title visibility
+   */
+  const toggleTitleVisibility = () => {
+    const newTitleHiddenState = !isTitleHidden
+    setIsTitleHidden(newTitleHiddenState)
+    onUpdate({ titleHidden: newTitleHiddenState })
+  }
+
+  /**
    * Save card title after editing
    */
   const handleTitleSave = () => {
@@ -209,7 +221,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   const startEditingContent = (e: React.MouseEvent) => {
     // Don't start editing if we're clicking a checkbox or input
     const target = e.target as HTMLElement
-    if (target.tagName === "INPUT" || target.type === "checkbox") {
+    if (target.tagName === "INPUT" || (target as HTMLInputElement).type === "checkbox") {
       return
     }
 
@@ -279,9 +291,9 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
    * Open image modal for the card's image
    * @param {React.MouseEvent} e - Mouse event
    */
-  const openImageModal = (e: React.MouseEvent) => {
+  const openImageModal = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    const { url } = getImageUrlFromMarkdown(card.content)
+    const { url } = await getImageUrlFromMarkdown(card.content)
     if (url) {
       handleImageClick(url)
     } else {
@@ -303,7 +315,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
 
   // Determine card styling based on mode
   const cardClasses = isPlain
-    ? "p-2"
+    ? `pt-2 pl-2 pr-2 ${isCollapsed && !isTitleHidden ? 'pb-[13px]' : 'pb-2'}`
     : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 pt-2 pl-2 pr-2 pb-0 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`
 
   /**
@@ -339,12 +351,36 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         size="sm"
         onClick={(e) => {
           e.stopPropagation()
+          toggleTitleVisibility()
+        }}
+        className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+        title={isTitleHidden ? "Show title" : "Hide title"}
+      >
+        {isTitleHidden ? <Eye className="h-2 w-2" /> : <EyeOff className="h-2 w-2" />}
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation()
           setIsImageUploadOpen(true)
         }}
         className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
         title="Add image"
       >
         <ImageIcon className="h-2 w-2" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation()
+          setIsCardModalOpen(true)
+        }}
+        className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+        title="Expand card"
+      >
+        <Expand className="h-2 w-2" />
       </Button>
       <Button
         variant="ghost"
@@ -384,7 +420,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         imageUrl={imageUrl}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={handleMouseLeave}
-        onClick={startEditingContent}
+        onClick={(e: React.MouseEvent) => startEditingContent(e)}
         onImageClick={handleImageClick}
         onImageModalClose={() => setIsImageModalOpen(false)}
         onImageUploadClose={() => setIsImageUploadOpen(false)}
@@ -422,7 +458,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         imageUrl={imageUrl}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={handleMouseLeave}
-        onClick={startEditingContent}
+        onClick={(e: React.MouseEvent) => startEditingContent(e)}
         onImageClick={handleImageClick}
         onImageModalClose={() => setIsImageModalOpen(false)}
         onImageUploadClose={() => setIsImageUploadOpen(false)}
@@ -443,76 +479,99 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={handleMouseLeave}
         >
-          {isEditingTitle ? (
-            <Input
-              value={titleValue}
-              onChange={(e) => setTitleValue(e.target.value)}
-              onBlur={handleTitleSave}
-              onKeyDown={handleTitleKeyDown}
-              className="text-xs font-semibold h-5 px-1 py-0 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-gray-800"
-              autoFocus
-            />
-          ) : (
+          {!isTitleHidden && (
             <>
-              <h3
-                className="text-xs font-semibold text-gray-800 cursor-pointer hover:bg-gray-50 px-1 py-0.5 rounded leading-tight pr-8"
-                onClick={() => setIsEditingTitle(true)}
-              >
-                {card.title}
-              </h3>
-              {isHovering && (
-                <div className="absolute top-0 right-0 flex z-10 bg-white/95 rounded p-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={togglePlain}
-                    className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-                  >
-                    <Minus className="h-2 w-2" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleLightBackground}
-                    className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-                  >
-                    <Hash style={{ width: "10px", height: "10px" }} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setIsImageUploadOpen(true)
-                    }}
-                    className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-                    title="Add image"
-                  >
-                    <ImageIcon className="h-2 w-2" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleCollapse}
-                    className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-                  >
-                    {isCollapsed ? <ChevronDown className="h-2 w-2" /> : <ChevronUp className="h-2 w-2" />}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDeleteClick}
-                    className={`h-4 w-4 p-0 transition-colors duration-200 ${
-                      isDeleteConfirming
-                        ? "text-red-600 hover:text-red-700 hover:bg-red-100 bg-red-50"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-                    }`}
-                  >
-                    <X className="h-2 w-2" />
-                  </Button>
-                </div>
+              {isEditingTitle ? (
+                <Input
+                  value={titleValue}
+                  onChange={(e) => setTitleValue(e.target.value)}
+                  onBlur={handleTitleSave}
+                  onKeyDown={handleTitleKeyDown}
+                  className="text-xs font-semibold h-5 px-1 py-0 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-gray-800"
+                  autoFocus
+                />
+              ) : (
+                <h3
+                  className="text-xs font-semibold text-gray-800 cursor-pointer hover:bg-gray-50 px-1 py-0.5 rounded leading-tight pr-8"
+                  onClick={() => setIsEditingTitle(true)}
+                >
+                  {card.title}
+                </h3>
               )}
             </>
+          )}
+          {isHovering && (
+            <div className={`absolute ${isTitleHidden ? 'top-2' : 'top-0'} right-0 flex z-10 bg-white/95 rounded p-1`}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={togglePlain}
+                className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              >
+                <Minus className="h-2 w-2" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleLightBackground}
+                className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              >
+                <Hash style={{ width: "10px", height: "10px" }} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleTitleVisibility}
+                className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                title={isTitleHidden ? "Show title" : "Hide title"}
+              >
+                {isTitleHidden ? <Eye className="h-2 w-2" /> : <EyeOff className="h-2 w-2" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsImageUploadOpen(true)
+                }}
+                className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                title="Add image"
+              >
+                <ImageIcon className="h-2 w-2" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsCardModalOpen(true)
+                }}
+                className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                title="Expand card"
+              >
+                <Expand className="h-2 w-2" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleCollapse}
+                className="h-4 w-4 p-0 ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+              >
+                {isCollapsed ? <ChevronDown className="h-2 w-2" /> : <ChevronUp className="h-2 w-2" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDeleteClick}
+                className={`h-4 w-4 p-0 ml-1 transition-colors duration-200 ${
+                  isDeleteConfirming
+                    ? "text-red-600 hover:text-red-700 hover:bg-red-100 bg-red-50"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                }`}
+              >
+                <X className="h-2 w-2" />
+              </Button>
+            </div>
           )}
         </div>
 
@@ -555,6 +614,15 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
           onImageSelect={handleImageSelected}
         />
       )}
+      {isCardModalOpen && (
+        <CardModal
+          card={card}
+          onClose={() => setIsCardModalOpen(false)}
+          onUpdate={onUpdate}
+          onCheckboxToggle={handleCheckboxToggle}
+          onImageClick={handleImageClick}
+        />
+      )}
     </>
   )
 }
@@ -586,7 +654,7 @@ function AsyncImageOnlyCard({
   imageUrl: string
   onMouseEnter: () => void
   onMouseLeave: () => void
-  onClick: () => void
+  onClick: (e: React.MouseEvent) => void
   onImageClick: (url: string) => void
   onImageModalClose: () => void
   onImageUploadClose: () => void
@@ -711,7 +779,7 @@ function AsyncCollapsedImageCard({
   imageUrl: string
   onMouseEnter: () => void
   onMouseLeave: () => void
-  onClick: () => void
+  onClick: (e: React.MouseEvent) => void
   onImageClick: (url: string) => void
   onImageModalClose: () => void
   onImageUploadClose: () => void
