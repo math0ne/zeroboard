@@ -1377,7 +1377,7 @@ export default function KanbanBoard() {
         setCurrentBoardId(loadedBoardId)
         setCurrentBoardTitle(loadedBoard.title)
       } catch (error) {
-        console.error("Failed to load saved data:", error)
+        // Failed to load saved data
       }
     }
     // Always set loading to false after checking localStorage
@@ -1392,7 +1392,6 @@ export default function KanbanBoard() {
 
   // Update board title value when current board title changes
   useEffect(() => {
-    console.log('currentBoardTitle changed to:', currentBoardTitle)
     setBoardTitleValue(currentBoardTitle)
   }, [currentBoardTitle])
 
@@ -1411,7 +1410,6 @@ export default function KanbanBoard() {
     }
     
     const cleanTitle = stripMarkdown(currentBoardTitle)
-    console.log('Setting document title to:', `zeroboard - ${cleanTitle}`, 'from currentBoardTitle:', currentBoardTitle)
     document.title = `zeroboard - ${cleanTitle}`
   }, [currentBoardTitle])
 
@@ -1558,7 +1556,6 @@ export default function KanbanBoard() {
       alert(`Export successful! Included ${boards.length} boards and ${imageCount} images.`)
       setIsDropdownOpen(false)
     } catch (error) {
-      console.error("Failed to export boards:", error)
       alert("Failed to export boards. Please try again.")
     }
   }
@@ -1612,7 +1609,6 @@ export default function KanbanBoard() {
 
                       importedImageCount++
                     } catch (error) {
-                      console.warn(`Failed to import image ${imageId}:`, error)
                       // Continue with other images even if one fails
                     }
                   }
@@ -1623,7 +1619,6 @@ export default function KanbanBoard() {
                   clearImageCache()
                 }
               } catch (error) {
-                console.error("Error importing images:", error)
                 // Continue with board import even if images fail
               }
             }
@@ -1644,7 +1639,6 @@ export default function KanbanBoard() {
           throw new Error("Invalid file format")
         }
       } catch (error) {
-        console.error("Failed to import boards:", error)
         alert("Failed to import boards. Please check the file format and try again.")
       }
     }
