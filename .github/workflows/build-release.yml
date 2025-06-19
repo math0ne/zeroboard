@@ -1,4 +1,4 @@
-name: Build and Release
+name: Web Release
 
 on:
   push:
@@ -6,8 +6,10 @@ on:
       - 'v*'
 
 jobs:
-  build-web:
+  build-and-release-web:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,78 +32,7 @@ jobs:
           zip -r ../zeroboard-web-${{ github.ref_name }}.zip .
           cd ..
 
-      - name: Upload web artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-build
-          path: zeroboard-web-${{ github.ref_name }}.zip
-
-  build-electron:
-    strategy:
-      matrix:
-        os: [macos-latest, windows-latest]
-        include:
-          - os: macos-latest
-            platform: mac
-            arch: x64,arm64
-          - os: windows-latest
-            platform: win
-            arch: x64
-
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'yarn'
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Build Next.js app
-        run: yarn build
-
-      - name: Build Electron app (macOS)
-        if: matrix.os == 'macos-latest'
-        run: yarn electron-build-mac
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: false
-
-      - name: Build Electron app (Windows)
-        if: matrix.os == 'windows-latest'
-        run: yarn electron-build-win
-
-      - name: Upload artifacts (macOS)
-        if: matrix.os == 'macos-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: electron-mac
-          path: dist-electron/*.dmg
-
-      - name: Upload artifacts (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: electron-windows
-          path: dist-electron/*.exe
-
-  create-release:
-    needs: [build-web, build-electron]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-
-      - name: Create Release
+      - name: Create Web Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
@@ -111,6 +42,4 @@ jobs:
           generate_release_notes: true
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            web-build/zeroboard-web-${{ github.ref_name }}.zip
-            electron-mac/*.dmg
-            electron-windows/*.exe
+            zeroboard-web-${{ github.ref_name }}.zip
