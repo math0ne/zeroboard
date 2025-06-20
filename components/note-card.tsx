@@ -80,9 +80,9 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   const shouldShowBackground = !isPlain || isEditingTitle || isEditingContent
   // Adjust padding based on whether title is hidden and background visibility
   const isCodeOnlyFullWidth = isCodeOnlyCard && isTitleHidden && isPlain
-  const topPadding = isCodeOnlyFullWidth ? "pt-0" : (isTitleHidden ? "pt-1" : "pt-2")
+  const topPadding = isCodeOnlyFullWidth ? "pt-0" : (isPlain ? "pt-1" : (isTitleHidden ? "pt-1" : "pt-2"))
   const bottomPaddingWithBg = isTitleHidden ? "pb-1" : "pb-2"
-  const bottomPaddingNoBg = isCodeOnlyFullWidth ? "pb-0" : (isTitleHidden ? "pb-0" : "pb-1")
+  const bottomPaddingNoBg = isCodeOnlyFullWidth ? "pb-0" : (isCollapsed ? "pb-2" : (isTitleHidden ? "pb-1" : "pb-1"))
   const cardClasses = shouldShowBackground
     ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 ${topPadding} pl-2 pr-2 ${bottomPaddingWithBg} shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`
     : `${topPadding} pl-2 pr-2 ${bottomPaddingNoBg}`
@@ -752,7 +752,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         )}
         
         {!isTitleHidden && (
-          <div>
+          <div style={isCollapsed ? { marginBottom: '0.3rem' } : {}}>
             {isEditingTitle ? (
               <Input
                 value={titleValue}
@@ -764,7 +764,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
               />
             ) : (
               <h3
-                className="text-xs font-semibold text-gray-800 cursor-pointer hover:bg-gray-50 px-1 py-0.5 rounded leading-tight pr-8"
+                className={`text-xs font-semibold text-gray-800 cursor-pointer hover:bg-gray-50 px-1 rounded leading-tight pr-8 ${isCollapsed ? 'py-1' : 'py-0.5'}`}
                 onClick={() => setIsEditingTitle(true)}
               >
                 {card.title}
@@ -774,7 +774,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         )}
 
         {!isCollapsed && (
-          <div className={`text-xs leading-tight ${isCodeOnlyFullWidth ? 'pt-0' : 'pt-2'}`}>
+          <div className={`text-xs leading-tight ${isCodeOnlyFullWidth ? 'pt-0' : (isPlain ? 'pt-0.5' : 'pt-2')}`}>
             {isEditingContent ? (
               <Textarea
                 ref={textareaRef}
