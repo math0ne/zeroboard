@@ -125,6 +125,65 @@ The built files will be in the `dist` directory, ready for deployment to any sta
 - **Image Library**: Access uploaded images through the image manager
 - **Local Storage**: Images are stored locally in your browser
 
+## ⌨️ Keyboard Shortcuts
+
+### Card Editing
+| Shortcut | Action | Context |
+|----------|--------|---------|
+| `Enter` | Save changes and exit edit mode | When editing card titles |
+| `Escape` | Cancel changes and revert | When editing titles or content |
+| `Ctrl/Cmd + Enter` | Save changes and exit edit mode | When editing card content |
+
+### Modal Navigation
+| Shortcut | Action | Context |
+|----------|--------|---------|
+| `Escape` | Close modal | Any modal window |
+| `Escape` | Cancel editing (if editing) | Card modal with active editor |
+| `Ctrl/Cmd + Enter` | Save content changes | When editing in card modal |
+
+### Column Management
+| Shortcut | Action | Context |
+|----------|--------|---------|
+| `Enter` | Save column title | When editing column titles |
+| `Escape` | Cancel title changes | When editing column titles |
+
+### Board Management
+| Shortcut | Action | Context |
+|----------|--------|---------|
+| `Enter` | Save board title | When editing board titles |
+| `Escape` | Cancel title changes | When editing board titles |
+
+### Desktop App (Electron) Shortcuts
+#### File Operations
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + N` | Create new board |
+| `Ctrl/Cmd + O` | Import board from file |
+| `Ctrl/Cmd + S` | Export current board |
+
+#### Standard Editing
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + Z` | Undo |
+| `Ctrl/Cmd + Y` | Redo |
+| `Ctrl/Cmd + X` | Cut |
+| `Ctrl/Cmd + C` | Copy |
+| `Ctrl/Cmd + V` | Paste |
+| `Ctrl/Cmd + A` | Select all |
+
+#### View Controls
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + R` | Reload application |
+| `Ctrl/Cmd + Shift + R` | Force reload |
+| `F12` / `Cmd + Option + I` | Toggle developer tools |
+| `Ctrl/Cmd + 0` | Reset zoom |
+| `Ctrl/Cmd + =` | Zoom in |
+| `Ctrl/Cmd + -` | Zoom out |
+| `F11` / `Cmd + Ctrl + F` | Toggle fullscreen |
+
+> **Note**: Most card management operations (creating, deleting, moving cards) are performed through mouse interactions with the interface controls.
+
 ## 🛠 Technical Details
 
 ### Built With

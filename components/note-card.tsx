@@ -7,24 +7,25 @@
 
 "use client"
 
-import React, { useState, useEffect, useRef, useCallback } from "react"
-import { ChevronDown, ChevronUp, Hash, Maximize2, Square, X, ImageIcon, Expand, Type } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import React, { useState, useEffect, useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { MarkdownRenderer } from "./markdown-renderer"
 import { ImageModal } from "./image-modal"
 import { ImageUploadModal } from "./image-upload-modal"
 import { CardModal } from "./card-modal"
+import { useKeyboardHandler } from "../hooks/use-card-state"
 import type { Card as CardType } from "../app/page"
 import {
-  getImageUrlFromMarkdown,
   isImageOnlyContent,
   isTableOnlyContent,
   startsWithImage,
   createImageErrorElement,
+  getImageUrlFromMarkdown,
   getCacheVersion,
 } from "@/lib/image-utils"
+import { ChevronDown, ChevronUp, Hash, Square, X, ImageIcon, Expand, Type, Maximize2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 /**
  * Props for the NoteCard component
@@ -70,6 +71,16 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   const isTableOnlyCard = isTableOnlyContent(card.content)
   const cardStartsWithImage = startsWithImage(card.content)
   const isEmptyContent = !card.content || card.content.trim() === ""
+
+  // Determine card styling based on mode - add extra padding for DEFAULT (non-plain) collapsed cards with visible titles
+  const shouldAddExtraPadding = !isPlain && isCollapsed && !isTitleHidden
+  const cardClasses = isPlain
+    ? `pt-2 pl-2 pr-2 pb-2`
+    : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 pt-2 pl-2 pr-2 pb-0 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`
+  
+  // Apply extra padding via inline style if needed
+  const getCardStyle = (shouldAddExtraPadding: boolean) => 
+    shouldAddExtraPadding ? { paddingBottom: '6px' } : {}
 
   /**
    * Handle image click to open modal
@@ -158,42 +169,6 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   }, [isHovering])
 
   /**
-   * Toggle card collapsed state
-   */
-  const toggleCollapse = () => {
-    const newCollapsedState = !isCollapsed
-    setIsCollapsed(newCollapsedState)
-    onUpdate({ collapsed: newCollapsedState })
-  }
-
-  /**
-   * Toggle card plain mode (no border/shadow)
-   */
-  const togglePlain = () => {
-    const newPlainState = !isPlain
-    setIsPlain(newPlainState)
-    onUpdate({ plain: newPlainState })
-  }
-
-  /**
-   * Toggle card light background
-   */
-  const toggleLightBackground = () => {
-    const newLightBackgroundState = !isLightBackground
-    setIsLightBackground(newLightBackgroundState)
-    onUpdate({ lightBackground: newLightBackgroundState })
-  }
-
-  /**
-   * Toggle card title visibility
-   */
-  const toggleTitleVisibility = () => {
-    const newTitleHiddenState = !isTitleHidden
-    setIsTitleHidden(newTitleHiddenState)
-    onUpdate({ titleHidden: newTitleHiddenState })
-  }
-
-  /**
    * Save card title after editing
    */
   const handleTitleSave = () => {
@@ -206,19 +181,6 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   }
 
   /**
-   * Handle keyboard events in title input
-   * @param {React.KeyboardEvent} e - Keyboard event
-   */
-  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleTitleSave()
-    } else if (e.key === "Escape") {
-      setTitleValue(card.title)
-      setIsEditingTitle(false)
-    }
-  }
-
-  /**
    * Save card content after editing
    */
   const handleContentSave = () => {
@@ -226,19 +188,50 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     setIsEditingContent(false)
   }
 
-  /**
-   * Handle keyboard events in content textarea
-   * @param {React.KeyboardEvent} e - Keyboard event
-   */
-  const handleContentKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
+  // Keyboard handlers using unified utility
+  const handleTitleKeyDown = useKeyboardHandler({
+    onEnter: handleTitleSave,
+    onEscape: () => {
+      setTitleValue(card.title)
+      setIsEditingTitle(false)
+    }
+  })
+
+  const handleContentKeyDown = useKeyboardHandler({
+    onEscape: () => {
       setContentValue(card.content)
       setIsEditingContent(false)
-    }
-    // Ctrl/Cmd + Enter to save
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-      handleContentSave()
-    }
+    },
+    onCtrlEnter: handleContentSave
+  })
+
+  // Toggle functions
+  const toggleCollapse = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    const newValue = !isCollapsed
+    setIsCollapsed(newValue)
+    onUpdate({ collapsed: newValue })
+  }
+
+  const togglePlain = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    const newValue = !isPlain
+    setIsPlain(newValue)
+    onUpdate({ plain: newValue })
+  }
+
+  const toggleLightBackground = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    const newValue = !isLightBackground
+    setIsLightBackground(newValue)
+    onUpdate({ lightBackground: newValue })
+  }
+
+  const toggleTitleVisibility = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    const newValue = !isTitleHidden
+    setIsTitleHidden(newValue)
+    onUpdate({ titleHidden: newValue })
   }
 
   /**
@@ -346,14 +339,6 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     onUpdate({ content: newContent })
   }
 
-  // Determine card styling based on mode - add extra padding for DEFAULT (non-plain) collapsed cards with visible titles
-  const shouldAddExtraPadding = !isPlain && isCollapsed && !isTitleHidden
-  const cardClasses = isPlain
-    ? `pt-2 pl-2 pr-2 pb-2`
-    : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 pt-2 pl-2 pr-2 pb-0 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`
-  
-  // Apply extra padding via inline style if needed
-  const cardStyle = shouldAddExtraPadding ? { paddingBottom: '6px' } : {}
   
 
   /**
@@ -578,7 +563,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     <>
       <div 
         className={`${cardClasses} relative`} 
-        style={cardStyle}
+        style={getCardStyle(shouldAddExtraPadding)}
         ref={cardRef}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={handleMouseLeave}
