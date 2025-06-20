@@ -209,6 +209,49 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     setIsEditingContent(false)
   }
 
+  /**
+   * Format selected text with markdown
+   * @param {string} wrapper - The markdown wrapper to add around selected text
+   */
+  const formatSelectedText = (wrapper: string) => {
+    if (!textareaRef.current) return
+
+    const textarea = textareaRef.current
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selectedText = contentValue.substring(start, end)
+    
+    // If text is already wrapped, unwrap it
+    const beforeSelection = contentValue.substring(Math.max(0, start - wrapper.length), start)
+    const afterSelection = contentValue.substring(end, Math.min(contentValue.length, end + wrapper.length))
+    
+    if (beforeSelection === wrapper && afterSelection === wrapper) {
+      // Unwrap the text
+      const newText = contentValue.substring(0, start - wrapper.length) + 
+                     selectedText + 
+                     contentValue.substring(end + wrapper.length)
+      setContentValue(newText)
+      
+      // Restore selection
+      setTimeout(() => {
+        textarea.setSelectionRange(start - wrapper.length, end - wrapper.length)
+        textarea.focus()
+      }, 0)
+    } else {
+      // Wrap the text
+      const newText = contentValue.substring(0, start) + 
+                     wrapper + selectedText + wrapper + 
+                     contentValue.substring(end)
+      setContentValue(newText)
+      
+      // Restore selection
+      setTimeout(() => {
+        textarea.setSelectionRange(start + wrapper.length, end + wrapper.length)
+        textarea.focus()
+      }, 0)
+    }
+  }
+
   // Keyboard handlers using unified utility
   const handleTitleKeyDown = useKeyboardHandler({
     onEnter: handleTitleSave,
@@ -218,13 +261,28 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     }
   })
 
-  const handleContentKeyDown = useKeyboardHandler({
-    onEscape: () => {
+  const handleContentKeyDown = (e: React.KeyboardEvent) => {
+    // Handle formatting shortcuts
+    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+      e.preventDefault()
+      formatSelectedText('**')
+      return
+    }
+    
+    if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+      e.preventDefault()
+      formatSelectedText('*')
+      return
+    }
+
+    // Handle other shortcuts
+    if (e.key === "Escape") {
       setContentValue(card.content)
       setIsEditingContent(false)
-    },
-    onCtrlEnter: handleContentSave
-  })
+    } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      handleContentSave()
+    }
+  }
 
   // Toggle functions
   const toggleCollapse = (e?: React.MouseEvent) => {
@@ -999,7 +1057,7 @@ function AsyncCollapsedImageCard({
           src={imageData.url}
           alt={imageData.alt}
           className="w-full object-cover"
-          style={{ height: "45px", objectPosition: "center top" }}
+          style={{ height: "45px", objectPosition: "center" }}
           onError={(e) => {
             e.currentTarget.style.display = "none"
             const errorDiv = createImageErrorElement()

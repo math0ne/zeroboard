@@ -26,17 +26,19 @@ export function ImageUploadModal({ isOpen, onClose, onImageSelect }: ImageUpload
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
+      <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Images</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2 pb-4">
-          <div className="space-y-4">
+        <div className="space-y-4 py-2 pb-4 flex flex-col overflow-hidden">
+          <div className="flex-shrink-0">
             <ImageUpload onImageUploaded={handleImageUploaded} maxSizeKB={5000} />
+          </div>
 
-            <div className="mt-6">
-              <h3 className="text-sm font-medium mb-2">Image Library</h3>
+          <div className="mt-6 flex-1 overflow-hidden">
+            <h3 className="text-sm font-medium mb-2">Image Library</h3>
+            <div className="overflow-y-auto max-h-[60vh]">
               <ImageManager onImageSelect={handleImageSelected} showSelector={true} />
             </div>
           </div>
