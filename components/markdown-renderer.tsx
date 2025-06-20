@@ -446,7 +446,7 @@ export function MarkdownRenderer({
                 {children}
               </th>
             ),
-            td: ({ children }) => <td className="border border-gray-300 px-2 py-1 text-xs">{children}</td>,
+            td: ({ children }) => <td className="border border-gray-300 px-2 py-1 text-xs whitespace-normal" style={{ maxWidth: '200px' }}>{children}</td>,
           }}
         >
           {content}
@@ -479,6 +479,13 @@ export function MarkdownRenderer({
           width: calc(100% + 16px) !important;
           max-width: calc(100% + 16px) !important;
           min-width: calc(100% + 16px) !important;
+        }
+        
+        /* Force link breaking in table cells */
+        td a {
+          word-break: break-all !important;
+          overflow-wrap: break-word !important;
+          hyphens: auto !important;
         }
         
         /* Specific override for custom code blocks */
@@ -786,9 +793,10 @@ export function MarkdownRenderer({
             a: ({ href, children }) => (
               <a
                 href={href}
-                className="text-inherit hover:underline"
+                className="text-inherit hover:underline break-words"
                 target="_blank"
                 rel="noopener noreferrer"
+                style={{ wordBreak: 'break-all', overflowWrap: 'break-word' }}
               >
                 {children}
               </a>
@@ -800,7 +808,7 @@ export function MarkdownRenderer({
             // Custom table renderers
             table: ({ children }) => (
               <div className="overflow-x-auto" style={{ margin: "0 0 10px 0" }}>
-                <table className="min-w-full border-collapse border border-gray-300">{children}</table>
+                <table className="w-full border-collapse border border-gray-300" style={{ tableLayout: 'auto' }}>{children}</table>
               </div>
             ),
             th: ({ children }) => (
@@ -808,7 +816,7 @@ export function MarkdownRenderer({
                 {children}
               </th>
             ),
-            td: ({ children }) => <td className="border border-gray-300 px-2 py-1 text-xs">{children}</td>,
+            td: ({ children }) => <td className="border border-gray-300 px-2 py-1 text-xs whitespace-normal" style={{ maxWidth: '200px' }}>{children}</td>,
             // Custom details/summary renderers
             details: ({ children, ...props }) => (
               <details className="mb-1" style={{ margin: "0 0 10px 0" }} {...props}>
