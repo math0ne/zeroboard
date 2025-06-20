@@ -76,15 +76,13 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   const shouldAddExtraPadding = !isPlain && isCollapsed && !isTitleHidden
   // Show background when editing, even if card is in plain mode
   const shouldShowBackground = !isPlain || isEditingTitle || isEditingContent
-  // Adjust top padding based on whether title is hidden
+  // Adjust padding based on whether title is hidden and background visibility
   const topPadding = isTitleHidden ? "pt-1" : "pt-2"
+  const bottomPaddingWithBg = isTitleHidden ? "pb-1" : "pb-2"
+  const bottomPaddingNoBg = isTitleHidden ? "pb-0" : "pb-1"
   const cardClasses = shouldShowBackground
-    ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 ${topPadding} pl-2 pr-2 pb-0 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`
-    : `${topPadding} pl-2 pr-2 pb-2`
-  
-  // Apply extra padding via inline style if needed
-  const getCardStyle = (shouldAddExtraPadding: boolean) => 
-    shouldAddExtraPadding ? { paddingBottom: '6px' } : {}
+    ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 ${topPadding} pl-2 pr-2 ${bottomPaddingWithBg} shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`
+    : `${topPadding} pl-2 pr-2 ${bottomPaddingNoBg}`
 
   /**
    * Handle image click to open modal
@@ -606,7 +604,6 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     <>
       <div 
         className={`${cardClasses} relative`} 
-        style={getCardStyle(shouldAddExtraPadding)}
         ref={cardRef}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={handleMouseLeave}
