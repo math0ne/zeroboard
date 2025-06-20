@@ -551,8 +551,8 @@ export function MarkdownRenderer({
           background: #666;
           position: absolute;
           transform: rotate(305deg);
-          top: 7.5px;
-          left: 4.5px;
+          top: 8.5px;
+          left: 5.5px;
           transition: width 50ms ease;
           transform-origin: 0% 0%;
         }

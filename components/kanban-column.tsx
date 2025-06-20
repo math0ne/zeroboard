@@ -101,7 +101,7 @@ export function KanbanColumn({
               onChange={(e) => setTitleValue(e.target.value)}
               onBlur={handleTitleSave}
               onKeyDown={handleTitleKeyDown}
-              className="text-xs font-normal h-5 px-1 py-0 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+              className="text-sm font-normal h-6 px-1 py-0.5 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
               autoFocus
             />
           ) : (
@@ -109,7 +109,7 @@ export function KanbanColumn({
               <div className="flex items-center flex-1">
                 <h2
                   {...dragHandleProps}
-                  className="font-normal text-gray-700 cursor-pointer hover:bg-gray-200 px-1 py-0.5 rounded flex-1 text-sm"
+                  className="font-normal text-gray-700 cursor-pointer hover:bg-gray-200 px-1 py-0.5 rounded flex-1 text-sm h-6 flex items-center"
                   onClick={() => setIsEditingTitle(true)}
                 >
                   <TitleMarkdownRenderer content={column.title} />

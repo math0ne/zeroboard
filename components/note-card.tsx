@@ -400,7 +400,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         className={`h-4 w-4 p-0 ml-1 ${isLightBackground ? 'text-black' : 'text-gray-400'}`}
         title={isLightBackground ? "Remove highlight" : "Highlight card"}
       >
-        <Hash className="h-2.5 w-2.5" />
+        <Hash className="h-2 w-2" />
       </Button>
       <Button
         variant="ghost"
@@ -450,7 +450,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         className="h-4 w-4 p-0 ml-1 text-gray-600"
         title="Expand card"
       >
-        <Expand className="h-1.5 w-1.5" />
+        <Expand style={{ width: '13px', height: '13px' }} />
       </Button>
       <Button
         variant="ghost"
@@ -621,7 +621,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
               className={`h-4 w-4 p-0 ml-1 ${isLightBackground ? 'text-black' : 'text-gray-400'}`}
               title={isLightBackground ? "Remove highlight" : "Highlight card"}
             >
-              <Hash className="h-2.5 w-2.5" />
+              <Hash className="h-2 w-2" />
             </Button>
             <Button
               variant="ghost"
@@ -665,7 +665,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
               className="h-4 w-4 p-0 ml-1 text-gray-600"
               title="Expand card"
             >
-              <Expand className="h-1.5 w-1.5" />
+              <Expand style={{ width: '13px', height: '13px' }} />
             </Button>
             <Button
               variant="ghost"

@@ -1852,19 +1852,19 @@ export default function KanbanBoard() {
                   onChange={(e) => setBoardTitleValue(e.target.value)}
                   onBlur={handleBoardTitleSave}
                   onKeyDown={handleBoardTitleKeyDown}
-                  className="text-xs font-normal h-5 px-1 py-0 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-gray-900 w-full"
+                  className="text-xs font-normal h-6 px-1 py-0 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-gray-900 w-full my-1"
                   autoFocus
                   onClick={(e) => e.stopPropagation()}
                 />
               ) : (
-                <h1 className="font-normal hover:bg-gray-200 px-1 py-0.5 rounded text-sm text-zinc-700">
+                <h1 className="font-normal hover:bg-gray-200 px-1 rounded text-sm text-zinc-700 h-6 flex items-center my-1" style={{ paddingTop: '4px', paddingBottom: '2px' }}>
                   <TitleMarkdownRenderer content={currentBoardTitle} />
                 </h1>
               )}
             </div>
 
             {(isTitleBarHovering || isDropdownOpen) && !isEditingBoardTitle && (
-              <div className="flex items-center gap-1 ml-2">
+              <div className="flex items-center gap-1 ml-2 h-8">
                 {/* Add Column Button */}
                 <Button
                   variant="ghost"
@@ -1873,7 +1873,7 @@ export default function KanbanBoard() {
                     e.stopPropagation()
                     addColumn()
                   }}
-                  className="h-6 w-6 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                  className="h-6 w-6 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded flex items-center justify-center"
                 >
                   <Plus className="h-3 w-3" />
                 </Button>
@@ -1887,7 +1887,7 @@ export default function KanbanBoard() {
                       e.stopPropagation()
                       setIsDropdownOpen(!isDropdownOpen)
                     }}
-                    className="h-6 px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 text-xs"
+                    className="h-6 w-6 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200 text-xs rounded flex items-center justify-center"
                   >
                     <ChevronDown className="h-3 w-3" />
                   </Button>
