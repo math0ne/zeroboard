@@ -98,7 +98,7 @@ export function ImageManager({ onImageSelect, showSelector = false }: ImageManag
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+      <div className="flex flex-wrap">
         {images.map((image) => (
           <div
             key={image.id}
@@ -107,9 +107,10 @@ export function ImageManager({ onImageSelect, showSelector = false }: ImageManag
                 ? `cursor-pointer hover:border-blue-400 ${selectedImage === image.id ? "border-blue-500 ring-2 ring-blue-200" : "border-gray-200"}`
                 : "border-gray-200"
             }`}
+            style={{ width: '120px', minWidth: '120px', maxWidth: '120px', marginRight: '12px', marginBottom: '12px' }}
             onClick={() => handleImageClick(image)}
           >
-            <div className="aspect-square relative">
+            <div className="aspect-square relative" style={{ width: '120px', height: '120px' }}>
               <img
                 src={imageUrls[image.id] || "/placeholder.svg"}
                 alt={image.filename}

@@ -26,7 +26,11 @@ export function ImageUploadModal({ isOpen, onClose, onImageSelect }: ImageUpload
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-4xl max-w-[90vw] max-h-[90vh]" aria-describedby={undefined}>
+      <DialogContent 
+        className="max-h-[90vh]" 
+        style={{ width: '80vw', maxWidth: '80vw' }}
+        aria-describedby={undefined}
+      >
         <DialogHeader>
           <DialogTitle>Images</DialogTitle>
         </DialogHeader>

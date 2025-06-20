@@ -1,6 +1,6 @@
 /**
  * @file image-utils.ts
- * @description Utility functions for handling images in markdown content
+ * @description Utility functions for handling images and content detection in markdown
  */
 
 import { imageService } from './indexeddb-image-service'
@@ -164,6 +164,16 @@ export function isTableOnlyContent(content: string): boolean {
  */
 export function startsWithImage(content: string): boolean {
   return /^\s*!\[.*?\](.*?)/.test(content.trim())
+}
+
+/**
+ * Check if markdown content contains only a code block
+ * @param {string} content - Markdown content to check
+ * @returns {boolean} True if content contains only a code block
+ */
+export function isCodeOnlyContent(content: string): boolean {
+  const trimmed = content.trim()
+  return /^```[\s\S]*```$/.test(trimmed)
 }
 
 /**

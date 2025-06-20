@@ -19,6 +19,7 @@ import type { Card as CardType } from "../app/page"
 import {
   isImageOnlyContent,
   isTableOnlyContent,
+  isCodeOnlyContent,
   startsWithImage,
   createImageErrorElement,
   getImageUrlFromMarkdown,
@@ -69,6 +70,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   // Use utility functions to determine card type
   const isImageOnlyCard = isImageOnlyContent(card.content)
   const isTableOnlyCard = isTableOnlyContent(card.content)
+  const isCodeOnlyCard = isCodeOnlyContent(card.content)
   const cardStartsWithImage = startsWithImage(card.content)
   const isEmptyContent = !card.content || card.content.trim() === ""
 
@@ -77,9 +79,10 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   // Show background when editing, even if card is in plain mode
   const shouldShowBackground = !isPlain || isEditingTitle || isEditingContent
   // Adjust padding based on whether title is hidden and background visibility
-  const topPadding = isTitleHidden ? "pt-1" : "pt-2"
+  const isCodeOnlyFullWidth = isCodeOnlyCard && isTitleHidden && isPlain
+  const topPadding = isCodeOnlyFullWidth ? "pt-0" : (isTitleHidden ? "pt-1" : "pt-2")
   const bottomPaddingWithBg = isTitleHidden ? "pb-1" : "pb-2"
-  const bottomPaddingNoBg = isTitleHidden ? "pb-0" : "pb-1"
+  const bottomPaddingNoBg = isCodeOnlyFullWidth ? "pb-0" : (isTitleHidden ? "pb-0" : "pb-1")
   const cardClasses = shouldShowBackground
     ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 ${topPadding} pl-2 pr-2 ${bottomPaddingWithBg} shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`
     : `${topPadding} pl-2 pr-2 ${bottomPaddingNoBg}`
@@ -771,7 +774,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         )}
 
         {!isCollapsed && (
-          <div className="text-xs leading-tight pt-2">
+          <div className={`text-xs leading-tight ${isCodeOnlyFullWidth ? 'pt-0' : 'pt-2'}`}>
             {isEditingContent ? (
               <Textarea
                 ref={textareaRef}
@@ -784,7 +787,13 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
               />
             ) : (
               <div
-                className={`prose prose-sm max-w-none cursor-pointer p-1 rounded py-0 prose-a:text-inherit prose-a:no-underline hover:prose-a:underline ${isEmptyContent ? "min-h-[60px] bg-gray-50/50 hover:bg-gray-100/50 flex items-center justify-center" : ""}`}
+                className={`prose prose-sm max-w-none cursor-pointer rounded py-0 prose-a:text-inherit prose-a:no-underline hover:prose-a:underline ${
+                  isEmptyContent 
+                    ? "min-h-[60px] bg-gray-50/50 hover:bg-gray-100/50 flex items-center justify-center p-1" 
+                    : (isCodeOnlyCard && isTitleHidden && isPlain) 
+                      ? "p-0" 
+                      : "p-1"
+                }`}
                 onClick={startEditingContent}
               >
                 {isEmptyContent ? (
@@ -794,6 +803,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
                     content={card.content}
                     onCheckboxToggle={handleCheckboxToggle}
                     onImageClick={handleImageClick}
+                    codeOnlyFullWidth={isCodeOnlyCard && isTitleHidden && isPlain}
                   />
                 )}
               </div>
