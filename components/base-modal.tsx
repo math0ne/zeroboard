@@ -75,14 +75,14 @@ export function BaseModal({
       onClick={handleBackdropClick}
     >
       <div 
-        className={`relative max-w-${maxWidth} max-h-[${maxHeight}] bg-white rounded-lg overflow-hidden ${className}`}
+        className={`relative max-w-${maxWidth} max-h-[${maxHeight}] bg-white overflow-hidden ${className}`}
       >
         {showCloseButton && (
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-white/80 hover:bg-white rounded-full"
+            className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-white/80 hover:bg-white"
           >
             <X className="h-4 w-4" />
           </Button>

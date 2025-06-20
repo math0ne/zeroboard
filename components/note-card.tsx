@@ -74,9 +74,11 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
 
   // Determine card styling based on mode - add extra padding for DEFAULT (non-plain) collapsed cards with visible titles
   const shouldAddExtraPadding = !isPlain && isCollapsed && !isTitleHidden
-  const cardClasses = isPlain
-    ? `pt-2 pl-2 pr-2 pb-2`
-    : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 pt-2 pl-2 pr-2 pb-0 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`
+  // Show background when editing, even if card is in plain mode
+  const shouldShowBackground = !isPlain || isEditingTitle || isEditingContent
+  const cardClasses = shouldShowBackground
+    ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 pt-2 pl-2 pr-2 pb-0 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`
+    : `pt-2 pl-2 pr-2 pb-2`
   
   // Apply extra padding via inline style if needed
   const getCardStyle = (shouldAddExtraPadding: boolean) => 
@@ -545,6 +547,9 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         isLightBackground={isLightBackground}
         onDragStart={forceHideHover}
         onDragEnd={forceHideHover}
+        isEditingTitle={isEditingTitle}
+        isEditingContent={isEditingContent}
+        shouldShowBackground={shouldShowBackground}
       />
     )
   }
@@ -553,14 +558,14 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   if (isTableOnlyCard && !isEditingTitle && !isEditingContent) {
     return (
       <div
-        className={`${isPlain ? "" : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`} overflow-hidden relative cursor-pointer`}
+        className={`${shouldShowBackground ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]` : ""} overflow-hidden relative cursor-pointer`}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={handleMouseLeave}
         onClick={startEditingContent}
         onDragStart={forceHideHover}
         onDragEnd={forceHideHover}
       >
-        {isHovering && renderControlButtons()}
+        {isHovering && !isEditingTitle && !isEditingContent && renderControlButtons()}
         <MarkdownRenderer content={card.content} tableOnly={true} onImageClick={handleImageClick} />
       </div>
     )
@@ -587,6 +592,9 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         isLightBackground={isLightBackground}
         onDragStart={forceHideHover}
         onDragEnd={forceHideHover}
+        isEditingTitle={isEditingTitle}
+        isEditingContent={isEditingContent}
+        shouldShowBackground={shouldShowBackground}
       />
     )
   }
@@ -603,7 +611,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         onDragStart={forceHideHover}
         onDragEnd={forceHideHover}
       >
-        {isHovering && (
+        {isHovering && !isEditingTitle && !isEditingContent && (
           <div className="absolute top-2 right-2 flex z-10 bg-white/95 rounded p-1">
             <Button
               variant="ghost"
@@ -777,7 +785,10 @@ function AsyncImageOnlyCard({
   isPlain, 
   isLightBackground,
   onDragStart,
-  onDragEnd
+  onDragEnd,
+  isEditingTitle,
+  isEditingContent,
+  shouldShowBackground
 }: {
   card: CardType
   isHovering: boolean
@@ -796,6 +807,9 @@ function AsyncImageOnlyCard({
   isLightBackground: boolean
   onDragStart?: () => void
   onDragEnd?: () => void
+  isEditingTitle: boolean
+  isEditingContent: boolean
+  shouldShowBackground: boolean
 }) {
   const [imageData, setImageData] = useState<{ url: string; alt: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -825,7 +839,7 @@ function AsyncImageOnlyCard({
 
   if (isLoading) {
     return (
-      <div className={`${isPlain ? "" : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`} overflow-hidden relative cursor-pointer h-32 flex items-center justify-center`}>
+      <div className={`${shouldShowBackground ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]` : ""} overflow-hidden relative cursor-pointer h-32 flex items-center justify-center`}>
         <span className="text-gray-400 text-xs">Loading image...</span>
       </div>
     )
@@ -833,7 +847,7 @@ function AsyncImageOnlyCard({
 
   if (!imageData || !imageData.url) {
     return (
-      <div className={`${isPlain ? "" : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`} overflow-hidden relative cursor-pointer h-32 flex items-center justify-center`}>
+      <div className={`${shouldShowBackground ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]` : ""} overflow-hidden relative cursor-pointer h-32 flex items-center justify-center`}>
         <span className="text-gray-400 text-xs">Image not available</span>
       </div>
     )
@@ -842,14 +856,14 @@ function AsyncImageOnlyCard({
   return (
     <>
       <div
-        className={`${isPlain ? "" : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`} overflow-hidden relative cursor-pointer`}
+        className={`${shouldShowBackground ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]` : ""} overflow-hidden relative cursor-pointer`}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         onClick={onClick}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
       >
-        {isHovering && (
+        {isHovering && !isEditingTitle && !isEditingContent && (
           <>
             {renderControlButtons()}
             <Button
@@ -907,7 +921,10 @@ function AsyncCollapsedImageCard({
   isPlain, 
   isLightBackground,
   onDragStart,
-  onDragEnd
+  onDragEnd,
+  isEditingTitle,
+  isEditingContent,
+  shouldShowBackground
 }: {
   card: CardType
   isHovering: boolean
@@ -926,6 +943,9 @@ function AsyncCollapsedImageCard({
   isLightBackground: boolean
   onDragStart?: () => void
   onDragEnd?: () => void
+  isEditingTitle: boolean
+  isEditingContent: boolean
+  shouldShowBackground: boolean
 }) {
   const [imageData, setImageData] = useState<{ url: string; alt: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -968,14 +988,14 @@ function AsyncCollapsedImageCard({
   return (
     <>
       <div
-        className={`${isPlain ? "" : `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`} overflow-hidden relative cursor-pointer`}
+        className={`${shouldShowBackground ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]` : ""} overflow-hidden relative cursor-pointer`}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         onClick={onClick}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
       >
-        {isHovering && renderControlButtons()}
+        {isHovering && !isEditingTitle && !isEditingContent && renderControlButtons()}
         <img
           src={imageData.url}
           alt={imageData.alt}

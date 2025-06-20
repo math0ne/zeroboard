@@ -92,12 +92,12 @@ export function CardModal({ card, onClose, onUpdate, onCheckboxToggle, onImageCl
       className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" 
       onClick={handleBackdropClick}
     >
-      <div className="relative max-w-4xl max-h-[90vh] bg-white rounded-lg overflow-hidden shadow-xl">
+      <div className="relative max-w-4xl max-h-[90vh] bg-white overflow-hidden shadow-xl">
         <Button
           variant="ghost"
           size="sm"
           onClick={onClose}
-          className="absolute top-3 right-3 z-10 h-8 w-8 p-0 bg-white/80 hover:bg-white rounded-full"
+          className="absolute top-3 right-3 z-10 h-8 w-8 p-0 bg-white/80 hover:bg-white"
         >
           <X className="h-4 w-4" />
         </Button>
