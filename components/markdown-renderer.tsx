@@ -608,7 +608,7 @@ export function MarkdownRenderer({
           // Capture checkbox clicks at the container level
           const target = e.target as HTMLElement
 
-          if (target.tagName === "INPUT" && target.type === "checkbox") {
+          if (target.tagName === "INPUT" && (target as HTMLInputElement).type === "checkbox") {
             e.preventDefault()
             e.stopPropagation()
 
@@ -646,7 +646,7 @@ export function MarkdownRenderer({
           urlTransform={(url) => url}
           components={{
             // Custom code block rendering
-            code({ node, inline, className, children, ...props }) {
+            code({ node, inline, className, children, ...props }: any) {
               const match = /language-(\w+)/.exec(className || "")
               const language = match ? match[1] : "text"
 

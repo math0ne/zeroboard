@@ -81,7 +81,7 @@ export function CardModal({ card, onClose, onUpdate, onCheckboxToggle, onImageCl
   const startEditingContent = (e: React.MouseEvent) => {
     // Don't start editing if we're clicking a checkbox or input
     const target = e.target as HTMLElement
-    if (target.tagName === "INPUT" || target.type === "checkbox") {
+    if (target.tagName === "INPUT" || (target as HTMLInputElement).type === "checkbox") {
       return
     }
     setIsEditingContent(true)
@@ -105,10 +105,9 @@ export function CardModal({ card, onClose, onUpdate, onCheckboxToggle, onImageCl
         <div className="p-6 overflow-y-auto max-h-[90vh]">
           {/* Card Title */}
           <div className="mb-4">
-            <TitleMarkdownRenderer 
-              content={card.title} 
-              className="text-2xl font-bold text-gray-900"
-            />
+            <div className="text-2xl font-bold text-gray-900">
+              <TitleMarkdownRenderer content={card.title} />
+            </div>
           </div>
 
           {/* Card Content */}
