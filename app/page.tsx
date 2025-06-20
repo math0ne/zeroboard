@@ -1967,14 +1967,14 @@ export default function KanbanBoard() {
 
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="columns" direction="horizontal" type="COLUMN">
-              {(provided, snapshot) => (
+              {(provided) => (
                 <div 
                   className="flex gap-2 pb-4 min-w-fit"
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                 >
                   {currentBoard.columns.map((column, index) => (
-                    <Draggable key={column.id} draggableId={column.id} index={index} type="COLUMN">
+                    <Draggable key={column.id} draggableId={column.id} index={index}>
                       {(provided, snapshot) => (
                         <div 
                           key={column.id} 
