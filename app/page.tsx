@@ -1360,6 +1360,8 @@ export default function KanbanBoard() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [hoveredBoardId, setHoveredBoardId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [showMobileTitleButtons, setShowMobileTitleButtons] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   const currentBoard = boards.find((board) => board.id === currentBoardId) || boards[0]
 
@@ -1412,6 +1414,35 @@ export default function KanbanBoard() {
     const cleanTitle = stripMarkdown(currentBoardTitle)
     document.title = `zeroboard - ${cleanTitle}`
   }, [currentBoardTitle])
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 459)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Hide mobile title buttons when clicking outside
+  useEffect(() => {
+    if (isMobile && showMobileTitleButtons) {
+      const handleClickOutside = (event: MouseEvent) => {
+        const target = event.target as HTMLElement
+        if (!target.closest('.mobile-title-bar')) {
+          setShowMobileTitleButtons(false)
+        }
+      }
+
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+  }, [isMobile, showMobileTitleButtons])
 
   // Add click outside listener for dropdown
   useEffect(() => {
@@ -1814,6 +1845,23 @@ export default function KanbanBoard() {
       return
     }
 
+    // Mobile behavior: first click shows buttons, second click edits
+    if (isMobile) {
+      if (!showMobileTitleButtons) {
+        // First click: show buttons
+        setShowMobileTitleButtons(true)
+        return
+      } else {
+        // Second click: hide buttons and start editing
+        setShowMobileTitleButtons(false)
+        if (!isEditingBoardTitle) {
+          setIsEditingBoardTitle(true)
+        }
+        return
+      }
+    }
+
+    // Desktop behavior: immediate edit
     if (!isEditingBoardTitle) {
       setIsEditingBoardTitle(true)
     }
@@ -1831,18 +1879,28 @@ export default function KanbanBoard() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-4">
+    <div className="min-h-screen bg-white p-4 mobile-container">
       {/* Hidden file input for import */}
       <input ref={fileInputRef} type="file" accept=".json" onChange={handleImportFile} style={{ display: "none" }} />
 
-      <div className="flex justify-center overflow-x-auto">
-        <div className="inline-block">
+      <div className="flex justify-center overflow-x-auto mobile-wrapper">
+        <div className="inline-block mobile-wrapper">
           {/* Board Title Bar - Width matches columns */}
           <div
-            className="bg-gray-100 p-2 shadow-sm mb-2 flex items-center cursor-pointer"
-            style={{ width: `${columnsWidth}px`, height: "36px" }}
+            className="bg-gray-100 p-2 shadow-sm mb-2 flex items-center cursor-pointer mobile-title-bar"
+            style={{ 
+              width: `${columnsWidth}px`, 
+              height: "36px"
+            }}
             onMouseEnter={() => !isEditingBoardTitle && setIsTitleBarHovering(true)}
-            onMouseLeave={() => !isDropdownOpen && setIsTitleBarHovering(false)}
+            onMouseLeave={() => {
+              if (!isDropdownOpen) {
+                setIsTitleBarHovering(false)
+              }
+              if (isMobile) {
+                setShowMobileTitleButtons(false)
+              }
+            }}
             onClick={handleTitleBarClick}
           >
             <div className="flex-1 min-w-0">
@@ -1863,7 +1921,7 @@ export default function KanbanBoard() {
               )}
             </div>
 
-            {(isTitleBarHovering || isDropdownOpen) && !isEditingBoardTitle && (
+            {(isTitleBarHovering || isDropdownOpen || (isMobile && showMobileTitleButtons)) && !isEditingBoardTitle && (
               <div className="flex items-center gap-1 ml-2 h-8">
                 {/* Add Column Button */}
                 <Button
@@ -1969,7 +2027,7 @@ export default function KanbanBoard() {
             <Droppable droppableId="columns" direction="horizontal" type="COLUMN">
               {(provided) => (
                 <div 
-                  className="flex gap-2 pb-4 min-w-fit"
+                  className="flex gap-2 pb-4 min-w-fit mobile-columns-container"
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                 >
@@ -1978,7 +2036,7 @@ export default function KanbanBoard() {
                       {(provided, snapshot) => (
                         <div 
                           key={column.id} 
-                          className={`flex-shrink-0 w-72 min-w-[18rem] ${snapshot.isDragging ? 'opacity-70 rotate-2' : ''}`}
+                          className={`flex-shrink-0 w-72 min-w-[18rem] mobile-column ${snapshot.isDragging ? 'opacity-70 rotate-2' : ''}`}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                         >

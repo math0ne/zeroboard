@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Droppable, Draggable } from "@hello-pangea/dnd"
 import { Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -34,6 +34,37 @@ export function KanbanColumn({
   const [titleValue, setTitleValue] = useState(column.title)
   const [isHovering, setIsHovering] = useState(false)
   const [isDeleteConfirming, setIsDeleteConfirming] = useState(false)
+  const [showMobileButtons, setShowMobileButtons] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 459)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Hide mobile buttons when clicking outside
+  useEffect(() => {
+    if (isMobile && showMobileButtons) {
+      const handleClickOutside = (event: MouseEvent) => {
+        const target = event.target as HTMLElement
+        if (!target.closest(`[data-column-id="${column.id}"]`)) {
+          setShowMobileButtons(false)
+        }
+      }
+
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+  }, [isMobile, showMobileButtons, column.id])
 
   const handleAddCard = () => {
     // Create a new blank card that will be in edit mode
@@ -67,6 +98,25 @@ export function KanbanColumn({
     }
   }
 
+  const handleTitleClick = () => {
+    // Mobile behavior: first click shows buttons, second click edits
+    if (isMobile) {
+      if (!showMobileButtons) {
+        // First click: show buttons
+        setShowMobileButtons(true)
+        return
+      } else {
+        // Second click: hide buttons and start editing
+        setShowMobileButtons(false)
+        setIsEditingTitle(true)
+        return
+      }
+    }
+
+    // Desktop behavior: immediate edit
+    setIsEditingTitle(true)
+  }
+
   const handleDeleteClick = () => {
     if (isDeleteConfirming) {
       // Second click - actually delete the column
@@ -85,13 +135,18 @@ export function KanbanColumn({
     setIsHovering(false)
     // Reset delete confirmation when mouse leaves the column
     setIsDeleteConfirming(false)
+    // Hide mobile buttons when mouse leaves
+    if (isMobile) {
+      setShowMobileButtons(false)
+    }
   }
 
   return (
-    <div className="flex-shrink-0 w-72 min-w-[18rem]">
+    <div className="flex-shrink-0 w-72 min-w-[18rem] mobile-column">
       <div className="bg-gray-100 p-2 shadow-sm">
         <div
           className="flex items-center justify-between mb-2"
+          data-column-id={column.id}
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={handleMouseLeave}
         >
@@ -110,12 +165,12 @@ export function KanbanColumn({
                 <h2
                   {...dragHandleProps}
                   className="font-normal text-gray-700 cursor-pointer hover:bg-gray-200 px-1 py-0.5 rounded flex-1 text-sm h-6 flex items-center"
-                  onClick={() => setIsEditingTitle(true)}
+                  onClick={handleTitleClick}
                 >
                   <TitleMarkdownRenderer content={column.title} />
                 </h2>
               </div>
-              {isHovering && (
+              {(isHovering || (isMobile && showMobileButtons)) && (
                 <div className="flex">
                   <Button
                     variant="ghost"

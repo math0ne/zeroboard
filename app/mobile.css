@@ -1,0 +1,27 @@
+/* Mobile responsive layout - separate file to avoid purging */
+@media (max-width: 459px) {
+  .mobile-container {
+    padding: 15px !important;
+  }
+  
+  .mobile-wrapper {
+    width: 100% !important;
+    overflow-x: visible !important;
+  }
+  
+  .mobile-title-bar {
+    width: 100% !important;
+  }
+  
+  .mobile-columns-container {
+    flex-direction: column !important;
+    gap: 16px !important;
+    min-width: 100% !important;
+  }
+  
+  .mobile-column {
+    width: 100% !important;
+    min-width: 100% !important;
+    flex-shrink: 1 !important;
+  }
+}

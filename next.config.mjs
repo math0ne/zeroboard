@@ -13,6 +13,9 @@ const nextConfig = {
   trailingSlash: true,
   distDir: 'dist',
   assetPrefix: '.',
+  experimental: {
+    optimizeCss: false,
+  },
 }
 
 export default nextConfig

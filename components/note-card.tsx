@@ -66,6 +66,8 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   const [isImageUploadOpen, setIsImageUploadOpen] = useState(false)
   const [isCardModalOpen, setIsCardModalOpen] = useState(false)
   const [isTitleHidden, setIsTitleHidden] = useState(card.titleHidden || false)
+  const [showMobileButtons, setShowMobileButtons] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   // Use utility functions to determine card type
   const isImageOnlyCard = isImageOnlyContent(card.content)
@@ -98,6 +100,18 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     setImageUrl(url)
     setIsImageModalOpen(true)
   }
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 459)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // If this is a new card, start in edit mode
   useEffect(() => {
@@ -160,6 +174,22 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
       }
     }
   }, [isEditingContent, contentValue])
+
+  // Hide mobile buttons when clicking outside the card
+  useEffect(() => {
+    if (isMobile && showMobileButtons) {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
+          setShowMobileButtons(false)
+        }
+      }
+
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
+    }
+  }, [isMobile, showMobileButtons])
 
   // Document-level mouse tracking to catch stuck hover states
   useEffect(() => {
@@ -329,6 +359,29 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   }
 
   /**
+   * Start editing card title
+   * @param {React.MouseEvent} e - Mouse event
+   */
+  const startEditingTitle = (e: React.MouseEvent) => {
+    // Mobile behavior: first click shows buttons, second click edits
+    if (isMobile) {
+      if (!showMobileButtons) {
+        // First click: show buttons
+        setShowMobileButtons(true)
+        return
+      } else {
+        // Second click: hide buttons and start editing
+        setShowMobileButtons(false)
+        setIsEditingTitle(true)
+        return
+      }
+    }
+
+    // Desktop behavior: immediate edit
+    setIsEditingTitle(true)
+  }
+
+  /**
    * Start editing card content
    * @param {React.MouseEvent} e - Mouse event
    */
@@ -339,6 +392,23 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
       return
     }
 
+    // Mobile behavior: first click shows buttons, second click edits
+    if (isMobile) {
+      if (!showMobileButtons) {
+        // First click: show buttons
+        setShowMobileButtons(true)
+        return
+      } else {
+        // Second click: hide buttons and start editing
+        setShowMobileButtons(false)
+        if (!isCollapsed) {
+          setIsEditingContent(true)
+        }
+        return
+      }
+    }
+
+    // Desktop behavior: immediate edit
     if (!isCollapsed) {
       setIsEditingContent(true)
     }
@@ -370,6 +440,10 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     setIsHovering(false)
     // Reset delete confirmation when mouse leaves the card
     setIsDeleteConfirming(false)
+    // Hide mobile buttons when mouse leaves
+    if (isMobile) {
+      setShowMobileButtons(false)
+    }
   }
 
   /**
@@ -626,7 +700,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         onDragStart={forceHideHover}
         onDragEnd={forceHideHover}
       >
-        {isHovering && !isEditingTitle && !isEditingContent && renderControlButtons()}
+        {(isHovering && !isEditingTitle && !isEditingContent || (isMobile && showMobileButtons && !isEditingTitle && !isEditingContent)) && renderControlButtons()}
         <MarkdownRenderer content={card.content} tableOnly={true} onImageClick={handleImageClick} />
       </div>
     )
@@ -671,7 +745,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         onDragStart={forceHideHover}
         onDragEnd={forceHideHover}
       >
-        {isHovering && !isEditingTitle && !isEditingContent && (
+        {(isHovering && !isEditingTitle && !isEditingContent || (isMobile && showMobileButtons && !isEditingTitle && !isEditingContent)) && (
           <div className="absolute top-2 right-2 flex z-10 bg-white/95 rounded p-1">
             <Button
               variant="ghost"
@@ -765,7 +839,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
             ) : (
               <h3
                 className={`text-xs font-semibold text-gray-800 cursor-pointer hover:bg-gray-50 px-1 rounded leading-tight pr-8 ${isCollapsed ? 'py-1' : 'py-0.5'}`}
-                onClick={() => setIsEditingTitle(true)}
+                onClick={startEditingTitle}
               >
                 {card.title}
               </h3>

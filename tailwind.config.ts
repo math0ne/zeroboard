@@ -8,8 +8,18 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "*.{js,ts,jsx,tsx,mdx}"
   ],
+  safelist: [
+    'mobile-container',
+    'mobile-wrapper', 
+    'mobile-title-bar',
+    'mobile-columns-container',
+    'mobile-column'
+  ],
   theme: {
   	extend: {
+		screens: {
+			'mobile': {'max': '459px'},
+		},
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
