@@ -11,8 +11,15 @@ const config: CapacitorConfig = {
       overlaysWebView: false,
     },
   },
+  server: {
+    androidScheme: 'https'
+  },
   ios: {
     contentInset: 'automatic',
+  },
+  android: {
+    allowMixedContent: true,
+    useLegacyBridge: false,
   },
 };
 

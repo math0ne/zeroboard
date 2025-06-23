@@ -1,4 +1,4 @@
-/* iOS Safe Area Support */
+/* Mobile Safe Area Support - iOS and Android */
 body {
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
@@ -6,19 +6,21 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
-/* Fallback for older iOS devices or if env() is not supported */
+/* Fallback for devices that don't support env() */
 @supports not (padding-top: env(safe-area-inset-top)) {
   body {
-    padding-top: 44px; /* Standard iOS status bar height */
+    padding-top: 56px; /* Android status bar + navigation */
   }
 }
 
 /* Mobile responsive layout - separate file to avoid purging */
-@media (max-width: 459px) {
+@media (max-width: 459px) {  
+  /* Target the main container specifically */
+  .min-h-screen.mobile-container,
   .mobile-container {
     padding: 15px !important;
-    /* Additional padding for mobile containers in safe area */
-    padding-top: calc(15px + env(safe-area-inset-top)) !important;
+    /* Status bar is now separate, no extra padding needed */
+    padding-top: 15px !important;
   }
   
   .mobile-wrapper {
