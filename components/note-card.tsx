@@ -25,7 +25,7 @@ import {
   getImageUrlFromMarkdown,
   getCacheVersion,
 } from "@/lib/image-utils"
-import { ChevronDown, ChevronUp, Hash, Square, X, ImageIcon, Expand, Type, Maximize2 } from "lucide-react"
+import { ChevronDown, ChevronUp, Hash, Square, X, ImageIcon, Expand, Type, Maximize2, ArrowUp, ArrowDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 /**
@@ -40,6 +40,10 @@ interface NoteCardProps {
   card: CardType
   onUpdate: (updates: Partial<CardType>) => void
   onDelete: () => void
+  onMoveUp?: () => void
+  onMoveDown?: () => void
+  canMoveUp?: boolean
+  canMoveDown?: boolean
   isNew?: boolean
 }
 
@@ -48,7 +52,7 @@ interface NoteCardProps {
  * @param {NoteCardProps} props - Component props
  * @returns {JSX.Element} Note card component
  */
-export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardProps) {
+export function NoteCard({ card, onUpdate, onDelete, onMoveUp, onMoveDown, canMoveUp, canMoveDown, isNew = false }: NoteCardProps) {
   // State for card display and editing
   const [isCollapsed, setIsCollapsed] = useState(card.collapsed || false)
   const [isPlain, setIsPlain] = useState(card.plain || false)
@@ -179,7 +183,10 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
   useEffect(() => {
     if (isMobile && showMobileButtons) {
       const handleClickOutside = (event: MouseEvent) => {
-        if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
+        const target = event.target as HTMLElement
+        // Check if click is outside this specific card by using card ID
+        const clickedCard = target.closest(`[data-card-id="${card.id}"]`)
+        if (!clickedCard) {
           setShowMobileButtons(false)
         }
       }
@@ -189,7 +196,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         document.removeEventListener("mousedown", handleClickOutside)
       }
     }
-  }, [isMobile, showMobileButtons])
+  }, [isMobile, showMobileButtons, card.id])
 
   // Document-level mouse tracking to catch stuck hover states
   useEffect(() => {
@@ -440,10 +447,7 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     setIsHovering(false)
     // Reset delete confirmation when mouse leaves the card
     setIsDeleteConfirming(false)
-    // Hide mobile buttons when mouse leaves
-    if (isMobile) {
-      setShowMobileButtons(false)
-    }
+    // Note: Don't hide mobile buttons on mouse leave since mouse events can be unreliable on mobile
   }
 
   /**
@@ -670,8 +674,8 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         isImageModalOpen={isImageModalOpen}
         isImageUploadOpen={isImageUploadOpen}
         imageUrl={imageUrl}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={handleMouseLeave}
+        onMouseEnter={() => !isMobile && setIsHovering(true)}
+        onMouseLeave={() => !isMobile && handleMouseLeave()}
         onClick={(e: React.MouseEvent) => startEditingContent(e)}
         onImageClick={handleImageClick}
         onImageModalClose={() => setIsImageModalOpen(false)}
@@ -685,6 +689,12 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         isEditingTitle={isEditingTitle}
         isEditingContent={isEditingContent}
         shouldShowBackground={shouldShowBackground}
+        isMobile={isMobile}
+        showMobileButtons={showMobileButtons}
+        onMoveUp={onMoveUp}
+        onMoveDown={onMoveDown}
+        canMoveUp={canMoveUp}
+        canMoveDown={canMoveDown}
       />
     )
   }
@@ -694,8 +704,9 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
     return (
       <div
         className={`${shouldShowBackground ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]` : ""} overflow-hidden relative cursor-pointer`}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={handleMouseLeave}
+        data-card-id={card.id}
+        onMouseEnter={() => !isMobile && setIsHovering(true)}
+        onMouseLeave={() => !isMobile && handleMouseLeave()}
         onClick={startEditingContent}
         onDragStart={forceHideHover}
         onDragEnd={forceHideHover}
@@ -715,8 +726,8 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         isImageModalOpen={isImageModalOpen}
         isImageUploadOpen={isImageUploadOpen}
         imageUrl={imageUrl}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={handleMouseLeave}
+        onMouseEnter={() => !isMobile && setIsHovering(true)}
+        onMouseLeave={() => !isMobile && handleMouseLeave()}
         onClick={(e: React.MouseEvent) => startEditingContent(e)}
         onImageClick={handleImageClick}
         onImageModalClose={() => setIsImageModalOpen(false)}
@@ -730,6 +741,12 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
         isEditingTitle={isEditingTitle}
         isEditingContent={isEditingContent}
         shouldShowBackground={shouldShowBackground}
+        isMobile={isMobile}
+        showMobileButtons={showMobileButtons}
+        onMoveUp={onMoveUp}
+        onMoveDown={onMoveDown}
+        canMoveUp={canMoveUp}
+        canMoveDown={canMoveDown}
       />
     )
   }
@@ -740,11 +757,47 @@ export function NoteCard({ card, onUpdate, onDelete, isNew = false }: NoteCardPr
       <div 
         className={`${cardClasses} relative`} 
         ref={cardRef}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={handleMouseLeave}
+        data-card-id={card.id}
+        onMouseEnter={() => !isMobile && setIsHovering(true)}
+        onMouseLeave={() => !isMobile && handleMouseLeave()}
         onDragStart={forceHideHover}
         onDragEnd={forceHideHover}
       >
+        {/* Mobile move buttons - positioned top left */}
+        {isMobile && showMobileButtons && !isEditingTitle && !isEditingContent && (onMoveUp || onMoveDown) && (
+          <div className="absolute top-2 left-2 flex z-10 bg-white/95 rounded p-1">
+            {onMoveUp && canMoveUp && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMoveUp()
+                }}
+                className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200 mr-0.5"
+                title="Move card up"
+              >
+                <ArrowUp className="h-2 w-2" />
+              </Button>
+            )}
+            {onMoveDown && canMoveDown && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMoveDown()
+                }}
+                className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                title="Move card down"
+              >
+                <ArrowDown className="h-2 w-2" />
+              </Button>
+            )}
+          </div>
+        )}
+        
+        {/* Standard controls - positioned top right */}
         {(isHovering && !isEditingTitle && !isEditingContent || (isMobile && showMobileButtons && !isEditingTitle && !isEditingContent)) && (
           <div className="absolute top-2 right-2 flex z-10 bg-white/95 rounded p-1">
             <Button
@@ -929,7 +982,13 @@ function AsyncImageOnlyCard({
   onDragEnd,
   isEditingTitle,
   isEditingContent,
-  shouldShowBackground
+  shouldShowBackground,
+  isMobile,
+  showMobileButtons,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown
 }: {
   card: CardType
   isHovering: boolean
@@ -951,6 +1010,12 @@ function AsyncImageOnlyCard({
   isEditingTitle: boolean
   isEditingContent: boolean
   shouldShowBackground: boolean
+  isMobile: boolean
+  showMobileButtons: boolean
+  onMoveUp?: () => void
+  onMoveDown?: () => void
+  canMoveUp?: boolean
+  canMoveDown?: boolean
 }) {
   const [imageData, setImageData] = useState<{ url: string; alt: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -998,13 +1063,48 @@ function AsyncImageOnlyCard({
     <>
       <div
         className={`${shouldShowBackground ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]` : ""} overflow-hidden relative cursor-pointer`}
+        data-card-id={card.id}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         onClick={onClick}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
       >
-        {isHovering && !isEditingTitle && !isEditingContent && (
+        {/* Mobile move buttons - positioned top left */}
+        {isMobile && showMobileButtons && !isEditingTitle && !isEditingContent && (onMoveUp || onMoveDown) && (
+          <div className="absolute top-2 left-2 flex z-10 bg-white/95 rounded p-1">
+            {onMoveUp && canMoveUp && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMoveUp()
+                }}
+                className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200 mr-0.5"
+                title="Move card up"
+              >
+                <ArrowUp className="h-2 w-2" />
+              </Button>
+            )}
+            {onMoveDown && canMoveDown && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMoveDown()
+                }}
+                className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                title="Move card down"
+              >
+                <ArrowDown className="h-2 w-2" />
+              </Button>
+            )}
+          </div>
+        )}
+        
+        {(isHovering && !isEditingTitle && !isEditingContent || (isMobile && showMobileButtons && !isEditingTitle && !isEditingContent)) && (
           <>
             {renderControlButtons()}
             <Button
@@ -1065,7 +1165,13 @@ function AsyncCollapsedImageCard({
   onDragEnd,
   isEditingTitle,
   isEditingContent,
-  shouldShowBackground
+  shouldShowBackground,
+  isMobile,
+  showMobileButtons,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown
 }: {
   card: CardType
   isHovering: boolean
@@ -1087,6 +1193,12 @@ function AsyncCollapsedImageCard({
   isEditingTitle: boolean
   isEditingContent: boolean
   shouldShowBackground: boolean
+  isMobile: boolean
+  showMobileButtons: boolean
+  onMoveUp?: () => void
+  onMoveDown?: () => void
+  canMoveUp?: boolean
+  canMoveDown?: boolean
 }) {
   const [imageData, setImageData] = useState<{ url: string; alt: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -1130,13 +1242,48 @@ function AsyncCollapsedImageCard({
     <>
       <div
         className={`${shouldShowBackground ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 shadow-[2px_2px_4px_rgba(0,0,0,0.1)]` : ""} overflow-hidden relative cursor-pointer`}
+        data-card-id={card.id}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         onClick={onClick}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
       >
-        {isHovering && !isEditingTitle && !isEditingContent && renderControlButtons()}
+        {/* Mobile move buttons - positioned top left */}
+        {isMobile && showMobileButtons && !isEditingTitle && !isEditingContent && (onMoveUp || onMoveDown) && (
+          <div className="absolute top-2 left-2 flex z-10 bg-white/95 rounded p-1">
+            {onMoveUp && canMoveUp && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMoveUp()
+                }}
+                className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200 mr-0.5"
+                title="Move card up"
+              >
+                <ArrowUp className="h-2 w-2" />
+              </Button>
+            )}
+            {onMoveDown && canMoveDown && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMoveDown()
+                }}
+                className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                title="Move card down"
+              >
+                <ArrowDown className="h-2 w-2" />
+              </Button>
+            )}
+          </div>
+        )}
+        
+        {(isHovering && !isEditingTitle && !isEditingContent || (isMobile && showMobileButtons && !isEditingTitle && !isEditingContent)) && renderControlButtons()}
         <img
           src={imageData.url}
           alt={imageData.alt}

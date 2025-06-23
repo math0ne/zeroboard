@@ -1817,6 +1817,47 @@ export default function KanbanBoard() {
     setBoards(boards.map((board) => (board.id === currentBoardId ? { ...board, columns: newColumns } : board)))
   }
 
+  const moveCard = (columnId: string, cardId: string, direction: 'up' | 'down') => {
+    const newColumns = currentBoard.columns.map((col) => {
+      if (col.id === columnId) {
+        const cardIndex = col.cards.findIndex((card) => card.id === cardId)
+        if (cardIndex === -1) return col
+        
+        const newCards = [...col.cards]
+        
+        if (direction === 'up' && cardIndex > 0) {
+          // Move card up (swap with previous card)
+          [newCards[cardIndex], newCards[cardIndex - 1]] = [newCards[cardIndex - 1], newCards[cardIndex]]
+        } else if (direction === 'down' && cardIndex < newCards.length - 1) {
+          // Move card down (swap with next card)
+          [newCards[cardIndex], newCards[cardIndex + 1]] = [newCards[cardIndex + 1], newCards[cardIndex]]
+        }
+        
+        return { ...col, cards: newCards }
+      }
+      return col
+    })
+    
+    setBoards(boards.map((board) => (board.id === currentBoardId ? { ...board, columns: newColumns } : board)))
+  }
+
+  const moveColumn = (columnId: string, direction: 'up' | 'down') => {
+    const columnIndex = currentBoard.columns.findIndex((col) => col.id === columnId)
+    if (columnIndex === -1) return
+    
+    const newColumns = [...currentBoard.columns]
+    
+    if (direction === 'up' && columnIndex > 0) {
+      // Move column up (swap with previous column)
+      [newColumns[columnIndex], newColumns[columnIndex - 1]] = [newColumns[columnIndex - 1], newColumns[columnIndex]]
+    } else if (direction === 'down' && columnIndex < newColumns.length - 1) {
+      // Move column down (swap with next column)
+      [newColumns[columnIndex], newColumns[columnIndex + 1]] = [newColumns[columnIndex + 1], newColumns[columnIndex]]
+    }
+    
+    setBoards(boards.map((board) => (board.id === currentBoardId ? { ...board, columns: newColumns } : board)))
+  }
+
   const updateCard = (columnId: string, cardId: string, updates: Partial<Card>) => {
     const newColumns = currentBoard.columns.map((col) =>
       col.id === columnId
@@ -1892,14 +1933,12 @@ export default function KanbanBoard() {
               width: `${columnsWidth}px`, 
               height: "36px"
             }}
-            onMouseEnter={() => !isEditingBoardTitle && setIsTitleBarHovering(true)}
+            onMouseEnter={() => !isMobile && !isEditingBoardTitle && setIsTitleBarHovering(true)}
             onMouseLeave={() => {
-              if (!isDropdownOpen) {
+              if (!isMobile && !isDropdownOpen) {
                 setIsTitleBarHovering(false)
               }
-              if (isMobile) {
-                setShowMobileTitleButtons(false)
-              }
+              // Don't hide mobile buttons on mouse leave since mouse events can be unreliable on mobile
             }}
             onClick={handleTitleBarClick}
           >
@@ -2023,41 +2062,69 @@ export default function KanbanBoard() {
             )}
           </div>
 
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="columns" direction="horizontal" type="COLUMN">
-              {(provided) => (
-                <div 
-                  className="flex gap-2 pb-4 min-w-fit mobile-columns-container"
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                >
-                  {currentBoard.columns.map((column, index) => (
-                    <Draggable key={column.id} draggableId={column.id} index={index}>
-                      {(provided, snapshot) => (
-                        <div 
-                          key={column.id} 
-                          className={`flex-shrink-0 w-72 min-w-[18rem] mobile-column ${snapshot.isDragging ? 'opacity-70 rotate-2' : ''}`}
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                        >
-                          <KanbanColumn
-                            column={column}
-                            onUpdateColumn={updateColumn}
-                            onDeleteColumn={deleteColumn}
-                            onAddCard={addCard}
-                            onUpdateCard={updateCard}
-                            onDeleteCard={deleteCard}
-                            dragHandleProps={provided.dragHandleProps}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
+          {isMobile ? (
+            // Mobile: No drag and drop - use up/down buttons instead
+            <div className="flex gap-2 pb-4 min-w-fit mobile-columns-container">
+              {currentBoard.columns.map((column, index) => (
+                <div key={column.id} className="flex-shrink-0 w-72 min-w-[18rem] mobile-column">
+                  <KanbanColumn
+                    column={column}
+                    onUpdateColumn={updateColumn}
+                    onDeleteColumn={deleteColumn}
+                    onAddCard={addCard}
+                    onUpdateCard={updateCard}
+                    onDeleteCard={deleteCard}
+                    onMoveCardUp={(columnId, cardId) => moveCard(columnId, cardId, 'up')}
+                    onMoveCardDown={(columnId, cardId) => moveCard(columnId, cardId, 'down')}
+                    onMoveColumnUp={index > 0 ? () => moveColumn(column.id, 'up') : undefined}
+                    onMoveColumnDown={index < currentBoard.columns.length - 1 ? () => moveColumn(column.id, 'down') : undefined}
+                    canMoveUp={index > 0}
+                    canMoveDown={index < currentBoard.columns.length - 1}
+                    dragHandleProps={null}
+                    isMobile={isMobile}
+                  />
                 </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+              ))}
+            </div>
+          ) : (
+            // Desktop: Full drag and drop functionality
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="columns" direction="horizontal" type="COLUMN">
+                {(provided) => (
+                  <div 
+                    className="flex gap-2 pb-4 min-w-fit mobile-columns-container"
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                  >
+                    {currentBoard.columns.map((column, index) => (
+                      <Draggable key={column.id} draggableId={column.id} index={index}>
+                        {(provided, snapshot) => (
+                          <div 
+                            key={column.id} 
+                            className={`flex-shrink-0 w-72 min-w-[18rem] mobile-column ${snapshot.isDragging ? 'opacity-70 rotate-2' : ''}`}
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                          >
+                            <KanbanColumn
+                              column={column}
+                              onUpdateColumn={updateColumn}
+                              onDeleteColumn={deleteColumn}
+                              onAddCard={addCard}
+                              onUpdateCard={updateCard}
+                              onDeleteCard={deleteCard}
+                              dragHandleProps={provided.dragHandleProps}
+                              isMobile={isMobile}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          )}
         </div>
       </div>
     </div>

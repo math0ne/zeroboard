@@ -25,3 +25,21 @@
     flex-shrink: 1 !important;
   }
 }
+
+/* Light touch improvements for mobile drag and drop */
+@media (max-width: 459px) {
+  /* Prevent text selection during drag - lighter approach */
+  [data-rbd-draggable-id] {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Basic touch-action for draggable elements only */
+  [data-rbd-drag-handle-draggable-id] {
+    touch-action: pan-y pinch-zoom;
+  }
+}

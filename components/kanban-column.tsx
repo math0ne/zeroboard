@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Droppable, Draggable } from "@hello-pangea/dnd"
-import { Plus, X } from "lucide-react"
+import { Plus, X, ArrowUp, ArrowDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { NoteCard } from "./note-card"
@@ -18,7 +18,14 @@ interface KanbanColumnProps {
   onAddCard: (columnId: string, card: Omit<Card, "id" | "createdAt" | "updatedAt">) => void
   onUpdateCard: (columnId: string, cardId: string, updates: Partial<Card>) => void
   onDeleteCard: (columnId: string, cardId: string) => void
+  onMoveCardUp?: (columnId: string, cardId: string) => void
+  onMoveCardDown?: (columnId: string, cardId: string) => void
+  onMoveColumnUp?: () => void
+  onMoveColumnDown?: () => void
+  canMoveUp?: boolean
+  canMoveDown?: boolean
   dragHandleProps?: any
+  isMobile: boolean
 }
 
 export function KanbanColumn({
@@ -28,26 +35,20 @@ export function KanbanColumn({
   onAddCard,
   onUpdateCard,
   onDeleteCard,
+  onMoveCardUp,
+  onMoveCardDown,
+  onMoveColumnUp,
+  onMoveColumnDown,
+  canMoveUp,
+  canMoveDown,
   dragHandleProps,
+  isMobile,
 }: KanbanColumnProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [titleValue, setTitleValue] = useState(column.title)
   const [isHovering, setIsHovering] = useState(false)
   const [isDeleteConfirming, setIsDeleteConfirming] = useState(false)
   const [showMobileButtons, setShowMobileButtons] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 459)
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   // Hide mobile buttons when clicking outside
   useEffect(() => {
@@ -135,10 +136,7 @@ export function KanbanColumn({
     setIsHovering(false)
     // Reset delete confirmation when mouse leaves the column
     setIsDeleteConfirming(false)
-    // Hide mobile buttons when mouse leaves
-    if (isMobile) {
-      setShowMobileButtons(false)
-    }
+    // Note: Don't hide mobile buttons on mouse leave since mouse events can be unreliable on mobile
   }
 
   return (
@@ -147,8 +145,8 @@ export function KanbanColumn({
         <div
           className="flex items-center justify-between mb-2"
           data-column-id={column.id}
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={handleMouseLeave}
+          onMouseEnter={() => !isMobile && setIsHovering(true)}
+          onMouseLeave={() => !isMobile && handleMouseLeave()}
         >
           {isEditingTitle ? (
             <Input
@@ -172,6 +170,39 @@ export function KanbanColumn({
               </div>
               {(isHovering || (isMobile && showMobileButtons)) && (
                 <div className="flex">
+                  {/* Mobile column movement buttons - show to the left of add/delete */}
+                  {isMobile && (onMoveColumnUp || onMoveColumnDown) && (
+                    <>
+                      {onMoveColumnUp && canMoveUp && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onMoveColumnUp()
+                          }}
+                          className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200 mr-1"
+                          title="Move column up"
+                        >
+                          <ArrowUp className="h-2 w-2" />
+                        </Button>
+                      )}
+                      {onMoveColumnDown && canMoveDown && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onMoveColumnDown()
+                          }}
+                          className="h-4 w-4 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200 mr-1"
+                          title="Move column down"
+                        >
+                          <ArrowDown className="h-2 w-2" />
+                        </Button>
+                      )}
+                    </>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -198,36 +229,57 @@ export function KanbanColumn({
           )}
         </div>
 
-        <Droppable droppableId={column.id}>
-          {(provided, snapshot) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className={`space-y-2 min-h-[200px] ${snapshot.isDraggingOver ? "bg-gray-200 rounded p-1" : ""}`}
-            >
-              {column.cards.map((card, index) => (
-                <Draggable key={card.id} draggableId={card.id} index={index}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className={snapshot.isDragging ? "opacity-70" : ""}
-                    >
-                      <NoteCard
-                        card={card}
-                        onUpdate={(updates) => onUpdateCard(column.id, card.id, updates)}
-                        onDelete={() => onDeleteCard(column.id, card.id)}
-                        isNew={card.id === `card-${Date.now()}`}
-                      />
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
+        {isMobile ? (
+          // Mobile: No drag and drop - use up/down buttons instead
+          <div className="space-y-2 min-h-[200px]">
+            {column.cards.map((card, index) => (
+              <div key={card.id}>
+                <NoteCard
+                  card={card}
+                  onUpdate={(updates) => onUpdateCard(column.id, card.id, updates)}
+                  onDelete={() => onDeleteCard(column.id, card.id)}
+                  onMoveUp={onMoveCardUp ? () => onMoveCardUp(column.id, card.id) : undefined}
+                  onMoveDown={onMoveCardDown ? () => onMoveCardDown(column.id, card.id) : undefined}
+                  canMoveUp={index > 0}
+                  canMoveDown={index < column.cards.length - 1}
+                  isNew={card.id === `card-${Date.now()}`}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          // Desktop: Full drag and drop functionality
+          <Droppable droppableId={column.id}>
+            {(provided, snapshot) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className={`space-y-2 min-h-[200px] ${snapshot.isDraggingOver ? "bg-gray-200 rounded p-1" : ""}`}
+              >
+                {column.cards.map((card, index) => (
+                  <Draggable key={card.id} draggableId={card.id} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        className={snapshot.isDragging ? "opacity-70" : ""}
+                      >
+                        <NoteCard
+                          card={card}
+                          onUpdate={(updates) => onUpdateCard(column.id, card.id, updates)}
+                          onDelete={() => onDeleteCard(column.id, card.id)}
+                          isNew={card.id === `card-${Date.now()}`}
+                        />
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        )}
       </div>
     </div>
   )
