@@ -1,7 +1,24 @@
+/* iOS Safe Area Support */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Fallback for older iOS devices or if env() is not supported */
+@supports not (padding-top: env(safe-area-inset-top)) {
+  body {
+    padding-top: 44px; /* Standard iOS status bar height */
+  }
+}
+
 /* Mobile responsive layout - separate file to avoid purging */
 @media (max-width: 459px) {
   .mobile-container {
     padding: 15px !important;
+    /* Additional padding for mobile containers in safe area */
+    padding-top: calc(15px + env(safe-area-inset-top)) !important;
   }
   
   .mobile-wrapper {

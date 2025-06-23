@@ -1,10 +1,17 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import './mobile.css'
 
 export const metadata: Metadata = {
   title: 'zeroboard',
   description: 'A powerful, lightweight Kanban board application for personal note-taking and project management',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({
