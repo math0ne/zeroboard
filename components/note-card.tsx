@@ -7,7 +7,7 @@
 
 "use client"
 
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { MarkdownRenderer } from "./markdown-renderer"
@@ -163,6 +163,14 @@ export function NoteCard({ card, onUpdate, onDelete, onMoveUp, onMoveDown, canMo
     }
   }, [contentValue, isEditingContent])
 
+  /**
+   * Save card content after editing
+   */
+  const handleContentSave = useCallback(() => {
+    onUpdate({ content: contentValue })
+    setIsEditingContent(false)
+  }, [onUpdate, contentValue])
+
   // Add click outside listener to save content when clicking outside
   useEffect(() => {
     if (isEditingContent) {
@@ -177,7 +185,7 @@ export function NoteCard({ card, onUpdate, onDelete, onMoveUp, onMoveDown, canMo
         document.removeEventListener("mousedown", handleClickOutside)
       }
     }
-  }, [isEditingContent, contentValue])
+  }, [isEditingContent, contentValue, handleContentSave])
 
   // Hide mobile buttons when clicking outside the card
   useEffect(() => {
@@ -241,13 +249,6 @@ export function NoteCard({ card, onUpdate, onDelete, onMoveUp, onMoveDown, canMo
     setIsEditingTitle(false)
   }
 
-  /**
-   * Save card content after editing
-   */
-  const handleContentSave = () => {
-    onUpdate({ content: contentValue })
-    setIsEditingContent(false)
-  }
 
   /**
    * Format selected text with markdown

@@ -36,17 +36,6 @@ export function BaseModal({
   showCloseButton = true,
   closeOnBackdrop = true
 }: BaseModalProps) {
-  if (!isOpen) return null
-
-  /**
-   * Handle backdrop click to close modal
-   */
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (closeOnBackdrop && e.target === e.currentTarget) {
-      onClose()
-    }
-  }
-
   /**
    * Handle escape key to close modal
    */
@@ -68,6 +57,17 @@ export function BaseModal({
       document.body.style.overflow = "unset"
     }
   }, [isOpen, onClose])
+
+  if (!isOpen) return null
+
+  /**
+   * Handle backdrop click to close modal
+   */
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (closeOnBackdrop && e.target === e.currentTarget) {
+      onClose()
+    }
+  }
 
   return (
     <div 

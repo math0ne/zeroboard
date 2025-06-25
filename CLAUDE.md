@@ -51,14 +51,25 @@ interface Board {
 # Start development server
 yarn dev
 
-# Build for production (static export)
+# Build for production (static export) - includes type checking and linting
 yarn build
+
+# Build without validation (faster)
+yarn build:fast
 
 # Serve built files locally
 yarn serve
 
 # Lint code
 yarn lint
+
+# Lint and auto-fix issues
+yarn lint:fix
+
+# Type checking only
+yarn type-check
+
+# Note: Uses Yarn 1.x (Classic) - npx is used for one-off commands
 ```
 
 ## Component Architecture

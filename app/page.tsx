@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { flushSync } from "react-dom"
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
 import { Plus, ChevronDown, X, Download, Upload, Cloud, CloudOff } from "lucide-react"
@@ -48,48 +48,47 @@ export interface Board {
 
 const defaultBoards: Board[] = [
   {
-    id: "personal",
-    title: "**Personal** *Kanban* Notes",
+    id: "zeroboard-showcase", 
+    title: "🎨 **ZeroBoard** *Showcase*",
     order: 0,
     columns: [
       {
-        id: "life",
-        title: "**Life** *Tasks*",
+        id: "getting-started",
+        title: "🚀 **Getting** *Started*",
         color: "bg-gray-100",
         cards: [
           {
-            id: "card-1",
-            title: "Welcome to Your Kanban Notes",
-            content: `Welcome to your personal Kanban note-taking app! Here are some features:
+            id: "welcome-card",
+            title: "Welcome to ZeroBoard! 🎯",
+            content: `# Welcome to Your Ultimate Kanban Experience!
 
-**Markdown Support**
-- **Bold text** and *italic text*
-- \`inline code\` and code blocks
-- Lists and checkboxes
-- Markdown in titles: **bold** and *italic* text in board and column titles
+**ZeroBoard** is a powerful, flexible Kanban board designed for *productivity enthusiasts* and *note-taking lovers*.
 
-**Task Lists**
+## ✨ **Key Features**
+- **📝 Rich Markdown Support** - Full GitHub Flavored Markdown
+- **🎨 Multiple Card Types** - Standard, collapsed, plain, light background
+- **📊 Tables & Code** - Perfect for technical documentation
+- **🖼️ Image Support** - Upload and embed images seamlessly
+- **☁️ Firebase Sync** - Optional cloud synchronization
+- **📱 Cross-Platform** - Web, desktop (Electron), mobile (iOS/Android)
+
+## 🎮 **Interactive Elements**
 - [x] Drag and drop cards between columns
-- [x] Edit cards with markdown
-- [x] Click on title to edit it
-- [x] Click on content to edit it inline
-- [x] Delete cards while editing
-- [x] Toggle plain mode with the dash icon
-- [x] Icons only appear on hover
-- [ ] Click checkboxes to toggle them
+- [x] Click titles and content to edit inline
+- [x] Interactive checkboxes (try clicking!)
+- [ ] Hover over this card to see control icons
+- [ ] Try the different card modes with the toolbar icons
 
-Try hovering over this card's title to see the icons!
+> **Pro Tip**: Explore all the example cards to discover ZeroBoard's full potential!
 
-## Test Image for Firebase Sync
-![Test Image](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==)
-
-*This tiny test image will be uploaded to Firebase Storage when you enable sync.*`,
+**Made with ❤️ for productivity and creativity**`,
             color: "white",
             tags: [],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             collapsed: false,
             plain: false,
+            lightBackground: true,
           },
           // Add an example card with lightBackground enabled to the Personal Kanban Notes board
           // Add this card after the first card in the "life" column
@@ -1375,14 +1374,14 @@ const ensureBoardOrder = (boards: Board[]): Board[] => {
 export default function KanbanBoard() {
   const [isLoading, setIsLoading] = useState(true)
   const [boards, setBoards] = useState<Board[]>([])
-  const [currentBoardId, _setCurrentBoardId] = useState("personal")
+  const [currentBoardId, _setCurrentBoardId] = useState("zeroboard-showcase")
   
   // Wrap setCurrentBoardId with debugging
-  const setCurrentBoardId = (newId: string) => {
+  const setCurrentBoardId = useCallback((newId: string) => {
     console.log(`🔥 setCurrentBoardId called: ${currentBoardId} -> ${newId}`)
     console.trace('Call stack:')
     _setCurrentBoardId(newId)
-  }
+  }, [currentBoardId])
   const [currentBoardTitle, setCurrentBoardTitle] = useState("**Personal** *Kanban* Notes")
   const [isEditingBoardTitle, setIsEditingBoardTitle] = useState(false)
   const [boardTitleValue, setBoardTitleValue] = useState("")
@@ -1460,6 +1459,7 @@ export default function KanbanBoard() {
     }
     // Always set loading to false after checking localStorage
     setIsLoading(false)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Save to localStorage whenever boards or current board change
@@ -1691,6 +1691,7 @@ export default function KanbanBoard() {
         })
       }
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Track currentBoardId changes for debugging
@@ -1728,7 +1729,7 @@ export default function KanbanBoard() {
         }
       }
     }
-  }, [currentBoardId, isLoading, isEnablingSync])
+  }, [currentBoardId, isLoading, isEnablingSync, setCurrentBoardId])
 
   // Detect mobile screen size
   useEffect(() => {
@@ -1804,6 +1805,7 @@ export default function KanbanBoard() {
     const newBoard: Board = {
       id: `board-${timestamp}`,
       title: `New Board ${boards.length + 1}`,
+      order: boards.length,
       columns: [
         {
           id: `column-${timestamp}-1`,
