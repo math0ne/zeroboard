@@ -187,3 +187,128 @@ export function createImageErrorElement(message = "Image not available test3"): 
   errorDiv.textContent = message
   return errorDiv
 }
+
+// ============================================================================
+// Firebase Image Sync Utilities
+// ============================================================================
+
+/**
+ * Check if an image source is a base64 data URL
+ * @param {string} src - Image source URL
+ * @returns {boolean} True if the source is a base64 data URL
+ */
+export const isBase64Image = (src: string): boolean => {
+  return src.startsWith('data:image/');
+};
+
+/**
+ * Check if an image source is a Firebase Storage URL
+ * @param {string} src - Image source URL
+ * @returns {boolean} True if the source is a Firebase Storage URL
+ */
+export const isFirebaseImage = (src: string): boolean => {
+  return src.includes('firebasestorage.googleapis.com');
+};
+
+/**
+ * Extract all image sources from markdown content
+ * @param {string} content - Markdown content
+ * @returns {string[]} Array of image source URLs
+ */
+export const extractImageSources = (content: string): string[] => {
+  const imageRegex = /!\[.*?\]\(([^)]+)\)/g;
+  const sources: string[] = [];
+  let match;
+  
+  while ((match = imageRegex.exec(content)) !== null) {
+    sources.push(match[1]);
+  }
+  
+  return sources;
+};
+
+/**
+ * Check if a card has any base64 images that need migration
+ * @param {string} content - Card content to check
+ * @returns {boolean} True if the card has base64 images
+ */
+export const cardNeedsMigration = (content: string): boolean => {
+  const imageSources = extractImageSources(content);
+  return imageSources.some(src => isBase64Image(src));
+};
+
+/**
+ * Check if a card has Firebase images that need downloading
+ * @param {string} content - Card content to check
+ * @returns {boolean} True if the card has Firebase images
+ */
+export const cardNeedsDownload = (content: string): boolean => {
+  const imageSources = extractImageSources(content);
+  return imageSources.some(src => isFirebaseImage(src));
+};
+
+/**
+ * Get image statistics for a card
+ * @param {string} content - Card content to analyze
+ * @returns {Object} Statistics about images in the card
+ */
+export const getCardImageStats = (content: string) => {
+  const imageSources = extractImageSources(content);
+  const base64Count = imageSources.filter(src => isBase64Image(src)).length;
+  const firebaseCount = imageSources.filter(src => isFirebaseImage(src)).length;
+  const localCount = imageSources.filter(src => src.startsWith('local:')).length;
+  const otherCount = imageSources.length - base64Count - firebaseCount - localCount;
+  
+  return {
+    total: imageSources.length,
+    base64: base64Count,
+    firebase: firebaseCount,
+    local: localCount,
+    other: otherCount,
+    sources: imageSources
+  };
+};
+
+/**
+ * Progressive image loading helper
+ * @param {string} src - Image source URL
+ * @returns {Promise<string>} Promise that resolves to the source URL when loaded
+ */
+export const createImageLoadPromise = (src: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(src);
+    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+    img.src = src;
+  });
+};
+
+/**
+ * Batch load images with progress tracking
+ * @param {string[]} sources - Array of image source URLs
+ * @param {Function} onProgress - Optional progress callback
+ * @returns {Promise<string[]>} Promise that resolves to array of loaded sources
+ */
+export const loadImagesWithProgress = async (
+  sources: string[], 
+  onProgress?: (loaded: number, total: number) => void
+): Promise<string[]> => {
+  const loadedSources: string[] = [];
+  
+  for (let i = 0; i < sources.length; i++) {
+    try {
+      const loadedSrc = await createImageLoadPromise(sources[i]);
+      loadedSources.push(loadedSrc);
+    } catch (error) {
+      console.warn(`Failed to load image ${i + 1}/${sources.length}:`, error);
+      // Still add the source even if it failed to load
+      loadedSources.push(sources[i]);
+    }
+    
+    if (onProgress) {
+      onProgress(i + 1, sources.length);
+    }
+  }
+  
+  return loadedSources;
+};
