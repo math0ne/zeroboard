@@ -1,5 +1,13 @@
 # ZeroBoard
 
+[![CI](https://github.com/math0ne/zeroboard/actions/workflows/ci.yml/badge.svg)](https://github.com/math0ne/zeroboard/actions/workflows/ci.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen)](https://nodejs.org/)
+[![Code Style](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+
 A lightweight Kanban board application for personal note-taking and project management. Built with Next.js, featuring full markdown support, drag-and-drop functionality, and optional Firebase cloud sync.
 
 ![ZeroBoard Screenshot](/placeholder.svg?height=400&width=800&query=kanban+board+interface+with+cards+and+columns)
