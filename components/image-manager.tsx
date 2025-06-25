@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Trash2, Copy, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { imageService, type StoredImage } from "@/lib/indexeddb-image-service"
@@ -111,9 +112,11 @@ export function ImageManager({ onImageSelect, showSelector = false }: ImageManag
             onClick={() => handleImageClick(image)}
           >
             <div className="aspect-square relative" style={{ width: '120px', height: '120px' }}>
-              <img
+              <Image
                 src={imageUrls[image.id] || "/placeholder.svg"}
                 alt={image.filename}
+                width={120}
+                height={120}
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   // Failed to load image

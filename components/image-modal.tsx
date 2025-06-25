@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { X } from "lucide-react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 
@@ -22,7 +23,7 @@ export function ImageModal({ imageUrl, onClose }: ImageModalProps) {
       return
     }
 
-    const img = new Image()
+    const img = new window.Image()
     img.onload = () => {
       setIsLoading(false)
       setError(false)
@@ -66,10 +67,14 @@ export function ImageModal({ imageUrl, onClose }: ImageModalProps) {
         )}
 
         {!isLoading && !error && (
-          <img
+          <Image
             src={imageUrl || "/placeholder.svg"}
             alt="Enlarged view"
+            width={0}
+            height={0}
+            sizes="100vw"
             className="max-h-[80vh] max-w-full object-contain"
+            style={{ width: 'auto', height: 'auto' }}
           />
         )}
       </div>

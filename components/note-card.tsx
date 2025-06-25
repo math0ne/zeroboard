@@ -8,6 +8,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from "react"
+import Image from "next/image"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { MarkdownRenderer } from "./markdown-renderer"
@@ -1119,17 +1120,24 @@ function AsyncImageOnlyCard({
             </Button>
           </>
         )}
-        <img
-          src={imageData.url}
-          alt={imageData.alt}
-          className="w-full object-cover"
-          style={{ height: "auto" }}
-          onError={(e) => {
-            e.currentTarget.style.display = "none"
-            const errorDiv = createImageErrorElement()
-            e.currentTarget.parentElement?.appendChild(errorDiv)
-          }}
-        />
+        <div
+          onClick={onClick}
+          style={{ cursor: 'pointer' }}
+        >
+          <Image
+            src={imageData.url}
+            alt={imageData.alt}
+            width={0}
+            height={0}
+            sizes="100vw"
+            className="w-full h-auto object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = "none"
+              const errorDiv = createImageErrorElement()
+              e.currentTarget.parentElement?.appendChild(errorDiv)
+            }}
+          />
+        </div>
       </div>
       {isImageModalOpen && <ImageModal imageUrl={imageUrl} onClose={onImageModalClose} />}
       {isImageUploadOpen && (
@@ -1285,17 +1293,30 @@ function AsyncCollapsedImageCard({
         )}
         
         {(isHovering && !isEditingTitle && !isEditingContent || (isMobile && showMobileButtons && !isEditingTitle && !isEditingContent)) && renderControlButtons()}
-        <img
-          src={imageData.url}
-          alt={imageData.alt}
-          className="w-full object-cover"
-          style={{ height: "45px", objectPosition: "center" }}
-          onError={(e) => {
-            e.currentTarget.style.display = "none"
-            const errorDiv = createImageErrorElement()
-            e.currentTarget.parentElement?.appendChild(errorDiv)
-          }}
-        />
+        <div
+          onClick={onClick}
+          style={{ cursor: 'pointer', height: '45px', overflow: 'hidden' }}
+        >
+          <Image
+            src={imageData.url}
+            alt={imageData.alt}
+            width={0}
+            height={0}
+            sizes="100vw"
+            className="w-full object-cover"
+            style={{ 
+              objectPosition: "center top",
+              width: '100%',
+              height: '45px',
+              objectFit: 'cover'
+            }}
+            onError={(e) => {
+              e.currentTarget.style.display = "none"
+              const errorDiv = createImageErrorElement()
+              e.currentTarget.parentElement?.appendChild(errorDiv)
+            }}
+          />
+        </div>
       </div>
       {isImageModalOpen && <ImageModal imageUrl={imageUrl} onClose={onImageModalClose} />}
       {isImageUploadOpen && (

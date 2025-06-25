@@ -11,6 +11,7 @@
 import type React from "react"
 
 import { useMemo, useState, useEffect, useRef } from "react"
+import Image from "next/image"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { Button } from "@/components/ui/button"
@@ -36,6 +37,7 @@ interface MarkdownRendererProps {
   tableOnly?: boolean
   onImageClick?: (imageUrl: string) => void
   codeOnlyFullWidth?: boolean
+  isCollapsed?: boolean
 }
 
 /**
@@ -213,10 +215,12 @@ function ImageOnlyRenderer({
   content,
   collapsedImageHeight,
   onImageClick,
+  isCollapsed,
 }: {
   content: string
   collapsedImageHeight?: number
   onImageClick?: (imageUrl: string) => void
+  isCollapsed?: boolean
 }) {
   const [imageData, setImageData] = useState<{ url: string; alt: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -273,21 +277,37 @@ function ImageOnlyRenderer({
   }
 
   return (
-    <img
-      src={imageData.url}
-      alt={imageData.alt}
-      className="w-full object-cover"
-      style={imageStyle}
+    <div
       onClick={() => onImageClick?.(imageData.url)}
-      onError={(e) => {
-        const parent = e.currentTarget.parentElement
-        if (parent) {
-          e.currentTarget.style.display = "none"
-          const errorDiv = createImageErrorElement()
-          parent.appendChild(errorDiv)
-        }
+      style={{ 
+        cursor: onImageClick ? 'pointer' : 'default',
+        height: isCollapsed && collapsedImageHeight ? `${collapsedImageHeight}px` : 'auto',
+        overflow: isCollapsed && collapsedImageHeight ? 'hidden' : 'visible'
       }}
-    />
+    >
+      <Image
+        src={imageData.url}
+        alt={imageData.alt}
+        width={0}
+        height={0}
+        sizes="100vw"
+        className="w-full object-cover"
+        style={{
+          width: '100%',
+          height: isCollapsed && collapsedImageHeight ? `${collapsedImageHeight}px` : 'auto',
+          objectFit: 'cover',
+          objectPosition: isCollapsed ? 'center top' : 'center'
+        }}
+        onError={(e) => {
+          const parent = e.currentTarget.parentElement
+          if (parent) {
+            e.currentTarget.style.display = "none"
+            const errorDiv = createImageErrorElement()
+            parent.appendChild(errorDiv)
+          }
+        }}
+      />
+    </div>
   )
 }
 
@@ -382,10 +402,14 @@ function ImageWithExpand({
       onMouseLeave={() => setIsHovering(false)}
       style={{ display: "inline-block" }}
     >
-      <img
+      <Image
         src={resolvedSrc}
         alt={alt || ""}
+        width={0}
+        height={0}
+        sizes="100vw"
         className="max-w-full h-auto shadow-sm"
+        style={{ width: 'auto', height: 'auto' }}
         onError={(e) => {
           e.currentTarget.style.display = "none"
           const errorDiv = createImageErrorElement()
@@ -419,6 +443,7 @@ export function MarkdownRenderer({
   tableOnly = false,
   onImageClick,
   codeOnlyFullWidth = false,
+  isCollapsed = false,
 }: MarkdownRendererProps) {
   const processedContent = useMemo(() => {
     return content
@@ -426,7 +451,7 @@ export function MarkdownRenderer({
 
   // For image-only cards, we need a special component that handles async loading
   if (imageOnly) {
-    return <ImageOnlyRenderer content={content} collapsedImageHeight={collapsedImageHeight} onImageClick={onImageClick} />
+    return <ImageOnlyRenderer content={content} collapsedImageHeight={collapsedImageHeight} onImageClick={onImageClick} isCollapsed={isCollapsed} />
   }
 
   // For table-only cards, render only the table content
@@ -688,7 +713,7 @@ export function MarkdownRenderer({
               const language = match ? match[1] : "text"
 
               return !inline && match ? (
-                <CodeBlock language={language} fullWidth={codeOnlyFullWidth}>{String(children).replace(/\n$/, "")}</CodeBlock>
+                <CodeBlock language={language} fullWidth={codeOnlyFullWidth}>{String(children).replace(/ $/, "")}</CodeBlock>
               ) : (
                 <code className="bg-gray-100 px-1 py-0.5 rounded text-sm" {...props}>
                   {children}
