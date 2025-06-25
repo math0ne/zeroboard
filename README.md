@@ -19,7 +19,7 @@ A lightweight Kanban board application for personal note-taking and project mana
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18.18 or later
+- Node.js 20.0 or later
 - npm, yarn, or pnpm package manager
 
 ### Installation

@@ -97,6 +97,9 @@
   },
   "main": "electron.js",
   "homepage": "./",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "build": {
     "appId": "com.zeroboard.app",
     "productName": "ZeroBoard",
