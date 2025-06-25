@@ -16,37 +16,40 @@ A lightweight Kanban board application for personal note-taking and project mana
 - **Export/Import** - Backup and restore your boards with JSON export/import
 - **Static Deployment** - Deploy anywhere as a static site - no server required
 
+## 🛠 Built With
+
+- **Next.js 15** - React framework with static export capability
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first CSS framework
+- **Shadcn/ui** - Beautiful, accessible UI components
+- **React Markdown** - Markdown rendering with GitHub Flavored Markdown
+- **Hello Pangea DnD** - Drag and drop functionality
+- **Firebase** (Optional) - Authentication, Firestore, and Storage for cloud sync
+- **IndexedDB** - Local image storage
+- **Electron** - Desktop application wrapper
+
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 20.0 or later
 - npm, yarn, or pnpm package manager
 
 ### Installation
 
 1. **Clone the project**
+
    ```bash
    git clone <repository-url>
    cd zeroboard
-   ```
-
-2. **Install dependencies**
-   ```bash
    yarn install
-   ```
-
-3. **Start development server**
-   ```bash
    yarn dev
    ```
 
 ### Building for Production
 
 ```bash
-# Build static files
 yarn build
-
-# Serve the built files
 yarn start
 ```
 
@@ -57,39 +60,44 @@ The built files will be in the `dist` directory, ready for deployment to any sta
 ZeroBoard can be built as native mobile applications using Capacitor.
 
 ### Prerequisites for Mobile Development
+
 - **For iOS**: Xcode 14+ (macOS only)
 - **For Android**: Android Studio with Android SDK
 
 ### Mobile Development Setup
 
 1. **Add mobile platforms** (first time only)
+
    ```bash
    # Add Android platform
    yarn cap:add-android
-   
+
    # Add iOS platform (macOS only)
    yarn cap:add-ios
    ```
 
 2. **Build and run on device/simulator**
+
    ```bash
    # Android
    yarn cap:run-android
-   
+
    # iOS (macOS only)
    yarn cap:run-ios
    ```
 
 3. **Open in native IDEs for advanced development**
+
    ```bash
    # Open Android Studio
    yarn cap:open-android
-   
-   # Open Xcode (macOS only)  
+
+   # Open Xcode (macOS only)
    yarn cap:open-ios
    ```
 
 ### Mobile Build Commands
+
 ```bash
 # Sync web build with mobile platforms
 yarn cap:sync
@@ -100,6 +108,7 @@ yarn cap:build-ios        # Build iOS app
 ```
 
 ### Mobile Features
+
 - **Native mobile experience** with Capacitor
 - **Offline-first** - works without internet connection
 - **Local data storage** using browser storage APIs
@@ -112,6 +121,7 @@ yarn cap:build-ios        # Build iOS app
 ZeroBoard can be built as native desktop applications for macOS and Windows using Electron.
 
 ### Prerequisites for Desktop Development
+
 - **Node.js 20.0+** with Yarn package manager
 - **For macOS builds**: macOS with Xcode Command Line Tools
 - **For Windows builds**: Windows with Visual Studio Build Tools or cross-compilation setup
@@ -201,6 +211,7 @@ ZeroBoard works completely offline by default, but you can optionally enable Fir
 ### Setup Firebase Sync
 
 1. **Create Firebase Project**
+
    - Go to [Firebase Console](https://console.firebase.google.com/)
    - Create a new project
    - Enable Authentication (Google provider)
@@ -209,6 +220,7 @@ ZeroBoard works completely offline by default, but you can optionally enable Fir
 
 2. **Configure Environment**
    Create `.env.local` with your Firebase config:
+
    ```env
    NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
@@ -225,6 +237,7 @@ ZeroBoard works completely offline by default, but you can optionally enable Fir
    - Choose to keep local data or use cloud data
 
 ### Sync Features
+
 - **Real-time sync** between multiple devices
 - **Image synchronization** via Firebase Storage
 - **Conflict resolution** with user choice dialogs
@@ -234,55 +247,27 @@ ZeroBoard works completely offline by default, but you can optionally enable Fir
 ## ⌨️ Keyboard Shortcuts
 
 ### Card Editing
-| Shortcut | Action | Context |
-|----------|--------|---------|
-| `Enter` | Save changes and exit edit mode | When editing card titles |
-| `Escape` | Cancel changes and revert | When editing titles or content |
-| `Ctrl/Cmd + Enter` | Save changes and exit edit mode | When editing card content |
-| `Ctrl/Cmd + B` | Toggle bold text | When editing card content |
-| `Ctrl/Cmd + I` | Toggle italic text | When editing card content |
 
-### Modal Navigation
-| Shortcut | Action | Context |
-|----------|--------|---------|
-| `Escape` | Close modal | Any modal window |
-| `Escape` | Cancel editing (if editing) | Card modal with active editor |
-| `Ctrl/Cmd + Enter` | Save content changes | When editing in card modal |
-
-### Column Management
-| Shortcut | Action | Context |
-|----------|--------|---------|
-| `Enter` | Save column title | When editing column titles |
-| `Escape` | Cancel title changes | When editing column titles |
-
-### Board Management
-| Shortcut | Action | Context |
-|----------|--------|---------|
-| `Enter` | Save board title | When editing board titles |
-| `Escape` | Cancel title changes | When editing board titles |
+| Shortcut           | Action                          | Context                        |
+| ------------------ | ------------------------------- | ------------------------------ |
+| `Enter`            | Save changes and exit edit mode | When editing card titles       |
+| `Escape`           | Cancel changes and revert       | When editing titles or content |
+| `Ctrl/Cmd + Enter` | Save changes and exit edit mode | When editing card content      |
+| `Ctrl/Cmd + B`     | Toggle bold text                | When editing card content      |
+| `Ctrl/Cmd + I`     | Toggle italic text              | When editing card content      |
 
 ### Desktop App (Electron) Shortcuts
+
 #### File Operations
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl/Cmd + N` | Create new board |
+
+| Shortcut       | Action                 |
+| -------------- | ---------------------- |
+| `Ctrl/Cmd + N` | Create new board       |
 | `Ctrl/Cmd + O` | Import board from file |
-| `Ctrl/Cmd + S` | Export current board |
-
-#### Standard Editing
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl/Cmd + Z` | Undo |
-| `Ctrl/Cmd + Y` | Redo |
-| `Ctrl/Cmd + X` | Cut |
-| `Ctrl/Cmd + C` | Copy |
-| `Ctrl/Cmd + V` | Paste |
-| `Ctrl/Cmd + A` | Select all |
-
+| `Ctrl/Cmd + S` | Export current board   |
 
 ## 📁 Quick File Reference
 
-### Core Application Files
 - `/app/page.tsx` - Main kanban board application component with state management and drag-and-drop
 - `/app/layout.tsx` - Root HTML layout and metadata configuration
 - `/app/globals.css` - Global CSS styles and Tailwind imports
@@ -290,21 +275,15 @@ ZeroBoard works completely offline by default, but you can optionally enable Fir
 - `/components/kanban-column.tsx` - Column component managing cards and drag-and-drop zones
 - `/components/markdown-renderer.tsx` - Markdown rendering with syntax highlighting and interactive features
 - `/components/title-markdown-renderer.tsx` - Markdown renderer for titles and headers with bold/italic support
-
-### Firebase Integration Files
 - `/lib/firebase-config.ts` - Firebase configuration and initialization
 - `/lib/firebase-sync.ts` - Firebase sync service for boards and authentication
 - `/lib/firebase-image-sync.ts` - Firebase Storage service for image synchronization
-
-### Image Management Files
 - `/components/image-manager.tsx` - Image management interface for IndexedDB stored images
 - `/components/image-modal.tsx` - Full-screen image viewer modal component
 - `/components/image-upload-modal.tsx` - Image upload interface with drag-and-drop support
 - `/components/image-upload.tsx` - Core image upload functionality with IndexedDB integration
 - `/lib/indexeddb-image-service.ts` - IndexedDB service for image storage, retrieval, and management
 - `/lib/image-utils.ts` - Image processing utilities, caching, and markdown image extraction
-
-### Configuration Files
 - `/next.config.mjs` - Next.js configuration for static export and Electron compatibility
 - `/tailwind.config.ts` - Tailwind CSS configuration with custom theme and shadcn/ui setup
 - `/tsconfig.json` - TypeScript compiler configuration and path mappings
@@ -312,53 +291,39 @@ ZeroBoard works completely offline by default, but you can optionally enable Fir
 - `/package.json` - Project dependencies, scripts, and build configurations
 - `/electron.js` - Electron main process for desktop application window management
 - `/capacitor.config.ts` - Capacitor configuration for mobile app builds
-
-### Utility Files
 - `/lib/utils.ts` - General utility functions including Tailwind CSS class merging
 - `/components/theme-provider.tsx` - Theme context provider for application theming
-
-## 🛠 Built With
-
-- **Next.js 15** - React framework with static export capability
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first CSS framework
-- **Shadcn/ui** - Beautiful, accessible UI components
-- **React Markdown** - Markdown rendering with GitHub Flavored Markdown
-- **Hello Pangea DnD** - Drag and drop functionality
-- **Firebase** (Optional) - Authentication, Firestore, and Storage for cloud sync
-- **IndexedDB** - Local image storage
-- **Electron** - Desktop application wrapper
 
 ## 🎨 Data Models
 
 ```typescript
 interface Card {
-  id: string
-  title: string
-  content: string
-  color: string
-  tags: string[]
-  createdAt: string
-  updatedAt: string
-  collapsed?: boolean
-  plain?: boolean
-  lightBackground?: boolean
-  titleHidden?: boolean
+  id: string;
+  title: string;
+  content: string;
+  color: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  collapsed?: boolean;
+  plain?: boolean;
+  lightBackground?: boolean;
+  titleHidden?: boolean;
 }
 
 interface Column {
-  id: string
-  title: string
-  color: string
-  cards: Card[]
+  id: string;
+  title: string;
+  color: string;
+  cards: Card[];
 }
 
 interface Board {
-  id: string
-  title: string
-  columns: Column[]
-  order: number
-  imagesMigrated?: boolean
+  id: string;
+  title: string;
+  columns: Column[];
+  order: number;
+  imagesMigrated?: boolean;
 }
 ```
 
@@ -387,7 +352,3 @@ yarn cap:build-ios    # Build iOS production app
 yarn cap:open-android # Open in Android Studio
 yarn cap:open-ios     # Open in Xcode
 ```
-
----
-
-**Made with ❤️ for productivity enthusiasts and note-taking lovers**
