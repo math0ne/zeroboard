@@ -87,8 +87,8 @@ export function NoteCard({ card, onUpdate, onDelete, onMoveUp, onMoveDown, canMo
   // Adjust padding based on whether title is hidden and background visibility
   const isCodeOnlyFullWidth = isCodeOnlyCard && isTitleHidden && isPlain
   const topPadding = isCodeOnlyFullWidth ? "pt-0" : (isPlain ? "pt-1" : (isTitleHidden ? "pt-1" : "pt-2"))
-  const bottomPaddingWithBg = isTitleHidden ? "pb-1" : "pb-2"
-  const bottomPaddingNoBg = isCodeOnlyFullWidth ? "pb-0" : (isCollapsed ? "pb-2" : (isTitleHidden ? "pb-1" : "pb-1"))
+  const bottomPaddingWithBg = isTitleHidden ? "pb-1" : (isCollapsed ? "pb-1" : "pb-2")
+  const bottomPaddingNoBg = isCodeOnlyFullWidth ? "pb-0" : (isCollapsed ? "pb-0.5" : (isTitleHidden ? "pb-0.5" : "pb-1"))
   const cardClasses = shouldShowBackground
     ? `${isLightBackground ? "bg-gray-50" : "bg-white"} border border-gray-200 ${topPadding} pl-2 pr-2 ${bottomPaddingWithBg} shadow-[2px_2px_4px_rgba(0,0,0,0.1)]`
     : `${topPadding} pl-2 pr-2 ${bottomPaddingNoBg}`
@@ -879,7 +879,7 @@ export function NoteCard({ card, onUpdate, onDelete, onMoveUp, onMoveDown, canMo
         )}
         
         {!isTitleHidden && (
-          <div style={isCollapsed ? { marginBottom: '0.3rem' } : {}}>
+          <div style={isCollapsed ? { marginBottom: '0.05rem' } : {}}>
             {isEditingTitle ? (
               <Input
                 value={titleValue}
@@ -891,7 +891,7 @@ export function NoteCard({ card, onUpdate, onDelete, onMoveUp, onMoveDown, canMo
               />
             ) : (
               <h3
-                className={`text-xs font-semibold text-gray-800 cursor-pointer hover:bg-gray-50 px-1 rounded leading-tight pr-8 ${isCollapsed ? 'py-1' : 'py-0.5'}`}
+                className={`text-xs font-semibold text-gray-800 cursor-pointer hover:bg-gray-50 px-1 rounded leading-tight pr-8 ${isCollapsed ? 'py-0.5' : 'py-0.5'}`}
                 onClick={startEditingTitle}
               >
                 {card.title}
