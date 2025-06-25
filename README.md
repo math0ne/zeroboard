@@ -107,6 +107,93 @@ yarn cap:build-ios        # Build iOS app
 - **Firebase sync** works seamlessly on mobile
 - **Status bar integration** with proper styling
 
+## 🖥 Desktop Apps (Electron)
+
+ZeroBoard can be built as native desktop applications for macOS and Windows using Electron.
+
+### Prerequisites for Desktop Development
+- **Node.js 20.0+** with Yarn package manager
+- **For macOS builds**: macOS with Xcode Command Line Tools
+- **For Windows builds**: Windows with Visual Studio Build Tools or cross-compilation setup
+
+### Desktop Development Commands
+
+```bash
+# Run in development mode (with hot reload)
+yarn electron-dev
+
+# Run the built web app in Electron
+yarn electron
+
+# Build desktop apps for current platform
+yarn electron-build
+
+# Build for specific platforms
+yarn electron-build-mac     # Build macOS .dmg
+yarn electron-build-win     # Build Windows .exe
+yarn electron-build-all     # Build for both macOS and Windows
+```
+
+### Desktop Build Output
+
+After building, you'll find the desktop apps in the `dist-electron/` directory:
+
+- **macOS**: `.dmg` installer files for both Intel (`x64`) and Apple Silicon (`arm64`)
+- **Windows**: `.exe` installer with NSIS setup wizard
+
+### Desktop App Features
+
+- **Native desktop experience** with native window controls
+- **File system integration** for import/export operations
+- **Keyboard shortcuts** for productivity (see shortcuts section below)
+- **Offline-first** - no internet connection required
+- **Auto-updater ready** - configured for GitHub releases
+- **Cross-platform** - works on macOS, Windows, and Linux
+- **Local data storage** in platform-specific directories
+- **Native notifications** and system tray integration ready
+
+### Building for Distribution
+
+The desktop builds are automatically configured for distribution:
+
+- **Code signing** ready (set `CSC_IDENTITY_AUTO_DISCOVERY=false` to disable)
+- **Auto-updater** configured for GitHub releases
+- **NSIS installer** for Windows with custom install directory option
+- **DMG packaging** for macOS with both Intel and Apple Silicon support
+
+### Desktop Build Configuration
+
+The Electron build configuration is in `package.json` under the `build` section:
+
+```json
+{
+  "build": {
+    "appId": "com.zeroboard.app",
+    "productName": "ZeroBoard",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    }
+  }
+}
+```
+
 ## ☁️ Firebase Cloud Sync (Optional)
 
 ZeroBoard works completely offline by default, but you can optionally enable Firebase sync for multi-device access.
