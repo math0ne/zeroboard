@@ -49,23 +49,15 @@ interface Board {
 
 ```bash
 # Start development server
-npm run dev
-# or
 yarn dev
 
 # Build for production (static export)
-npm run build
-# or  
 yarn build
 
 # Serve built files locally
-npm run serve
-# or
 yarn serve
 
 # Lint code
-npm run lint
-# or
 yarn lint
 ```
 
