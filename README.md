@@ -107,15 +107,6 @@ yarn cap:build-android    # Build Android APK/Bundle
 yarn cap:build-ios        # Build iOS app
 ```
 
-### Mobile Features
-
-- **Native mobile experience** with Capacitor
-- **Offline-first** - works without internet connection
-- **Local data storage** using browser storage APIs
-- **Touch-friendly interface** optimized for mobile devices
-- **Firebase sync** works seamlessly on mobile
-- **Status bar integration** with proper styling
-
 ## 🖥 Desktop Apps (Electron)
 
 ZeroBoard can be built as native desktop applications for macOS and Windows using Electron.
@@ -150,17 +141,6 @@ After building, you'll find the desktop apps in the `dist-electron/` directory:
 
 - **macOS**: `.dmg` installer files for both Intel (`x64`) and Apple Silicon (`arm64`)
 - **Windows**: `.exe` installer with NSIS setup wizard
-
-### Desktop App Features
-
-- **Native desktop experience** with native window controls
-- **File system integration** for import/export operations
-- **Keyboard shortcuts** for productivity (see shortcuts section below)
-- **Offline-first** - no internet connection required
-- **Auto-updater ready** - configured for GitHub releases
-- **Cross-platform** - works on macOS, Windows, and Linux
-- **Local data storage** in platform-specific directories
-- **Native notifications** and system tray integration ready
 
 ### Building for Distribution
 
@@ -293,62 +273,3 @@ ZeroBoard works completely offline by default, but you can optionally enable Fir
 - `/capacitor.config.ts` - Capacitor configuration for mobile app builds
 - `/lib/utils.ts` - General utility functions including Tailwind CSS class merging
 - `/components/theme-provider.tsx` - Theme context provider for application theming
-
-## 🎨 Data Models
-
-```typescript
-interface Card {
-  id: string;
-  title: string;
-  content: string;
-  color: string;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  collapsed?: boolean;
-  plain?: boolean;
-  lightBackground?: boolean;
-  titleHidden?: boolean;
-}
-
-interface Column {
-  id: string;
-  title: string;
-  color: string;
-  cards: Card[];
-}
-
-interface Board {
-  id: string;
-  title: string;
-  columns: Column[];
-  order: number;
-  imagesMigrated?: boolean;
-}
-```
-
-## 📝 Development Commands
-
-```bash
-# Web Development
-yarn dev              # Start development server
-yarn build            # Build for production
-yarn start            # Serve built files
-yarn lint             # Run ESLint
-
-# Desktop App (Electron)
-yarn electron         # Run Electron app
-yarn electron-dev     # Development mode with hot reload
-yarn electron-build   # Build desktop distributables
-
-# Mobile Development (Capacitor)
-yarn cap:add-android  # Add Android platform
-yarn cap:add-ios      # Add iOS platform
-yarn cap:sync         # Sync web build with mobile platforms
-yarn cap:run-android  # Build and run on Android
-yarn cap:run-ios      # Build and run on iOS
-yarn cap:build-android # Build Android production app
-yarn cap:build-ios    # Build iOS production app
-yarn cap:open-android # Open in Android Studio
-yarn cap:open-ios     # Open in Xcode
-```
