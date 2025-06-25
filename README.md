@@ -37,14 +37,14 @@ A lightweight Kanban board application for personal note-taking and project mana
 
 ### Installation
 
-1. **Clone the project**
+**Clone the project**
 
-   ```bash
-   git clone <repository-url>
-   cd zeroboard
-   yarn install
-   yarn dev
-   ```
+```bash
+git clone <repository-url>
+cd zeroboard
+yarn install
+yarn dev
+```
 
 ### Building for Production
 
@@ -64,37 +64,27 @@ ZeroBoard can be built as native mobile applications using Capacitor.
 - **For iOS**: Xcode 14+ (macOS only)
 - **For Android**: Android Studio with Android SDK
 
-### Mobile Development Setup
+### Mobile Development
 
-1. **Add mobile platforms** (first time only)
+```bash
+# Add Android platform
+yarn cap:add-android
 
-   ```bash
-   # Add Android platform
-   yarn cap:add-android
+# Add iOS platform (macOS only)
+yarn cap:add-ios
 
-   # Add iOS platform (macOS only)
-   yarn cap:add-ios
-   ```
+# Android
+yarn cap:run-android
 
-2. **Build and run on device/simulator**
+# iOS (macOS only)
+yarn cap:run-ios
 
-   ```bash
-   # Android
-   yarn cap:run-android
+# Open Android Studio
+yarn cap:open-android
 
-   # iOS (macOS only)
-   yarn cap:run-ios
-   ```
-
-3. **Open in native IDEs for advanced development**
-
-   ```bash
-   # Open Android Studio
-   yarn cap:open-android
-
-   # Open Xcode (macOS only)
-   yarn cap:open-ios
-   ```
+# Open Xcode (macOS only)
+yarn cap:open-ios
+```
 
 ### Mobile Build Commands
 
@@ -150,39 +140,6 @@ The desktop builds are automatically configured for distribution:
 - **Auto-updater** configured for GitHub releases
 - **NSIS installer** for Windows with custom install directory option
 - **DMG packaging** for macOS with both Intel and Apple Silicon support
-
-### Desktop Build Configuration
-
-The Electron build configuration is in `package.json` under the `build` section:
-
-```json
-{
-  "build": {
-    "appId": "com.zeroboard.app",
-    "productName": "ZeroBoard",
-    "directories": {
-      "output": "dist-electron"
-    },
-    "mac": {
-      "category": "public.app-category.productivity",
-      "target": [
-        {
-          "target": "dmg",
-          "arch": ["x64", "arm64"]
-        }
-      ]
-    },
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": ["x64"]
-        }
-      ]
-    }
-  }
-}
-```
 
 ## ☁️ Firebase Cloud Sync (Optional)
 
