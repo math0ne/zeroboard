@@ -14,7 +14,16 @@
     "electron-build": "npm run build && electron-builder",
     "electron-build-mac": "npm run build && electron-builder --mac",
     "electron-build-win": "npm run build && electron-builder --win",
-    "electron-build-all": "npm run build && electron-builder --mac --win"
+    "electron-build-all": "npm run build && electron-builder --mac --win",
+    "cap:add-android": "npx cap add android",
+    "cap:add-ios": "npx cap add ios",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:run-android": "npm run build && npx cap sync && npx cap run android",
+    "cap:run-ios": "npm run build && npx cap sync && npx cap run ios",
+    "cap:build-android": "npm run build && npx cap sync && npx cap build android",
+    "cap:build-ios": "npm run build && npx cap sync && npx cap build ios",
+    "cap:open-android": "npx cap open android",
+    "cap:open-ios": "npx cap open ios"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.0",

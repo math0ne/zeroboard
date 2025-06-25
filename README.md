@@ -52,6 +52,61 @@ yarn start
 
 The built files will be in the `dist` directory, ready for deployment to any static hosting service.
 
+## 📱 Mobile Apps (iOS & Android)
+
+ZeroBoard can be built as native mobile applications using Capacitor.
+
+### Prerequisites for Mobile Development
+- **For iOS**: Xcode 14+ (macOS only)
+- **For Android**: Android Studio with Android SDK
+
+### Mobile Development Setup
+
+1. **Add mobile platforms** (first time only)
+   ```bash
+   # Add Android platform
+   yarn cap:add-android
+   
+   # Add iOS platform (macOS only)
+   yarn cap:add-ios
+   ```
+
+2. **Build and run on device/simulator**
+   ```bash
+   # Android
+   yarn cap:run-android
+   
+   # iOS (macOS only)
+   yarn cap:run-ios
+   ```
+
+3. **Open in native IDEs for advanced development**
+   ```bash
+   # Open Android Studio
+   yarn cap:open-android
+   
+   # Open Xcode (macOS only)  
+   yarn cap:open-ios
+   ```
+
+### Mobile Build Commands
+```bash
+# Sync web build with mobile platforms
+yarn cap:sync
+
+# Build for production
+yarn cap:build-android    # Build Android APK/Bundle
+yarn cap:build-ios        # Build iOS app
+```
+
+### Mobile Features
+- **Native mobile experience** with Capacitor
+- **Offline-first** - works without internet connection
+- **Local data storage** using browser storage APIs
+- **Touch-friendly interface** optimized for mobile devices
+- **Firebase sync** works seamlessly on mobile
+- **Status bar integration** with proper styling
+
 ## ☁️ Firebase Cloud Sync (Optional)
 
 ZeroBoard works completely offline by default, but you can optionally enable Firebase sync for multi-device access.
@@ -97,6 +152,8 @@ ZeroBoard works completely offline by default, but you can optionally enable Fir
 | `Enter` | Save changes and exit edit mode | When editing card titles |
 | `Escape` | Cancel changes and revert | When editing titles or content |
 | `Ctrl/Cmd + Enter` | Save changes and exit edit mode | When editing card content |
+| `Ctrl/Cmd + B` | Toggle bold text | When editing card content |
+| `Ctrl/Cmd + I` | Toggle italic text | When editing card content |
 
 ### Modal Navigation
 | Shortcut | Action | Context |
@@ -135,16 +192,6 @@ ZeroBoard works completely offline by default, but you can optionally enable Fir
 | `Ctrl/Cmd + V` | Paste |
 | `Ctrl/Cmd + A` | Select all |
 
-#### View Controls
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl/Cmd + R` | Reload application |
-| `Ctrl/Cmd + Shift + R` | Force reload |
-| `F12` / `Cmd + Option + I` | Toggle developer tools |
-| `Ctrl/Cmd + 0` | Reset zoom |
-| `Ctrl/Cmd + =` | Zoom in |
-| `Ctrl/Cmd + -` | Zoom out |
-| `F11` / `Cmd + Ctrl + F` | Toggle fullscreen |
 
 ## 📁 Quick File Reference
 
@@ -175,8 +222,9 @@ ZeroBoard works completely offline by default, but you can optionally enable Fir
 - `/tailwind.config.ts` - Tailwind CSS configuration with custom theme and shadcn/ui setup
 - `/tsconfig.json` - TypeScript compiler configuration and path mappings
 - `/components.json` - Shadcn/ui component library configuration
-- `/package.json` - Project dependencies, scripts, and Electron build configuration
+- `/package.json` - Project dependencies, scripts, and build configurations
 - `/electron.js` - Electron main process for desktop application window management
+- `/capacitor.config.ts` - Capacitor configuration for mobile app builds
 
 ### Utility Files
 - `/lib/utils.ts` - General utility functions including Tailwind CSS class merging
@@ -230,16 +278,27 @@ interface Board {
 ## 📝 Development Commands
 
 ```bash
-# Development
+# Web Development
 yarn dev              # Start development server
 yarn build            # Build for production
 yarn start            # Serve built files
 yarn lint             # Run ESLint
 
-# Electron (Desktop App)
+# Desktop App (Electron)
 yarn electron         # Run Electron app
 yarn electron-dev     # Development mode with hot reload
 yarn electron-build   # Build desktop distributables
+
+# Mobile Development (Capacitor)
+yarn cap:add-android  # Add Android platform
+yarn cap:add-ios      # Add iOS platform
+yarn cap:sync         # Sync web build with mobile platforms
+yarn cap:run-android  # Build and run on Android
+yarn cap:run-ios      # Build and run on iOS
+yarn cap:build-android # Build Android production app
+yarn cap:build-ios    # Build iOS production app
+yarn cap:open-android # Open in Android Studio
+yarn cap:open-ios     # Open in Xcode
 ```
 
 ---
