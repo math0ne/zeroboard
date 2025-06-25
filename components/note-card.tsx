@@ -1305,7 +1305,7 @@ function AsyncCollapsedImageCard({
             sizes="100vw"
             className="w-full object-cover"
             style={{ 
-              objectPosition: "center top",
+              objectPosition: "center",
               width: '100%',
               height: '45px',
               objectFit: 'cover'

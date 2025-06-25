@@ -296,7 +296,7 @@ function ImageOnlyRenderer({
           width: '100%',
           height: isCollapsed && collapsedImageHeight ? `${collapsedImageHeight}px` : 'auto',
           objectFit: 'cover',
-          objectPosition: isCollapsed ? 'center top' : 'center'
+          objectPosition: 'center'
         }}
         onError={(e) => {
           const parent = e.currentTarget.parentElement
