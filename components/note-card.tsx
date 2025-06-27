@@ -16,7 +16,7 @@ import { ImageModal } from "./image-modal"
 import { ImageUploadModal } from "./image-upload-modal"
 import { CardModal } from "./card-modal"
 import { useKeyboardHandler } from "../hooks/use-card-state"
-import type { Card as CardType } from "../app/page"
+import type { Card as CardType } from "@/lib/default-boards-data"
 import {
   isImageOnlyContent,
   isTableOnlyContent,

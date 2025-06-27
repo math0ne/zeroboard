@@ -8,7 +8,7 @@ import {
 } from 'firebase/storage';
 import { storage, isFirebaseEnabled } from './firebase-config';
 import { imageService } from './indexeddb-image-service';
-import type { Card } from '../app/page';
+import type { Card } from '@/lib/default-boards-data';
 
 export class FirebaseImageSync {
   private userId: string | null = null;

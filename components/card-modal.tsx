@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { MarkdownRenderer } from "./markdown-renderer"
 import { TitleMarkdownRenderer } from "./title-markdown-renderer"
-import type { Card as CardType } from "../app/page"
+import type { Card as CardType } from "@/lib/default-boards-data"
 
 interface CardModalProps {
   card: CardType

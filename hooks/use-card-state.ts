@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from "react"
-import type { Card as CardType } from "../app/page"
+import type { Card as CardType } from "@/lib/default-boards-data"
 
 /**
  * Card state properties that can be toggled

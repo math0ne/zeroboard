@@ -8,7 +8,7 @@ import { Plus, X, ArrowUp, ArrowDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { NoteCard } from "./note-card"
-import type { Column, Card } from "../app/page"
+import type { Column, Card } from "@/lib/default-boards-data"
 import { TitleMarkdownRenderer } from "@/components/title-markdown-renderer"
 
 interface KanbanColumnProps {

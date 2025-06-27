@@ -19,7 +19,7 @@ import {
 } from 'firebase/auth';
 import { auth, db, isFirebaseEnabled } from './firebase-config';
 import { firebaseImageSync } from './firebase-image-sync';
-import type { Board } from '../app/page';
+import type { Board } from '@/lib/default-boards-data';
 
 export class FirebaseSync {
   private userId: string | null = null;
